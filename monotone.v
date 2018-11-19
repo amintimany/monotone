@@ -5,6 +5,17 @@ Local Arguments valid _ _  !_ /.
 Local Arguments op _ _ _ !_ /.
 Local Arguments pcore _ _ !_ /.
 
+(**
+
+The idea is as follows: given a preorder relation R ⊆ A × A, we
+construct a monoid (resource algebra) such that the extension order of
+the monoid corresponds to the relation R. We do this by taking the
+monoid to be the free join-semi-lattice completion of the relation
+R. The monoid operation then is just join. The representative of an
+element a ∈ A, is written as principal R a.
+
+*)
+
 Record monotone {A : Type} (R : relation A) `{!PreOrder R} : Type := {
   monotone_car : list A;
   monotone_not_nil : bool_decide (monotone_car = []) = false
