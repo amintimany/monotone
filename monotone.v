@@ -173,17 +173,24 @@ Qed.
 Global Instance principal_inj `{!AntiSymm (≡) R} : Inj (≡) (≡) (principal R).
 Proof. intros a b ?. apply equiv_dist=>n. by apply principal_injN, equiv_dist. Qed.
 
+Lemma principal_op a b :
+  R a b → principal R a ⋅ principal R b ≡ principal R b.
+Proof.
+  intros HR.
+  rewrite /= /monotone_op /=.
+  intros ? z; split; simpl; setoid_rewrite elem_of_list_singleton;
+    setoid_rewrite elem_of_cons; setoid_rewrite elem_of_list_singleton;
+      intros [? Hab']; try destruct Hab'; simplify_eq; eauto.
+  intuition subst; eauto. eexists; split; eauto. etrans; eauto.
+Qed.
+
 Lemma principal_included a b : principal R a ≼ principal R b ↔ R a b.
 Proof.
   split.
   - intros [x Hx]. destruct (Hx 0 a) as [_ Hab].
     edestruct Hab as [c [?%elem_of_list_singleton ?]]; subst; eauto.
     { exists a; split; rewrite /=; eauto using elem_of_list_here; reflexivity. }
-  - intros Hab. exists (principal R b); rewrite /= /monotone_op /=.
-    intros ? z; split; simpl; setoid_rewrite elem_of_list_singleton;
-      setoid_rewrite elem_of_cons; setoid_rewrite elem_of_list_singleton;
-    intros [? Hab']; try destruct Hab'; simplify_eq; eauto.
-    intuition subst; eauto. eexists; split; eauto. etrans; eauto.
+  - intros Hab. exists (principal R b). rewrite principal_op; eauto.
 Qed.
 
 (** Internalized properties *)
@@ -197,5 +204,5 @@ Qed.
 End monotone.
 
 Instance: Params (@principal) 1.
-Arguments monotoneC : clear implicits.
-Arguments monotoneR : clear implicits.
+Arguments monotoneC {_} _ {_}.
+Arguments monotoneR {_} _ {_}.
