@@ -167,11 +167,33 @@ $\lub$.
   A \cdot B \eqdef{} & A \cup B\\
   \forall A.\; \valid{A}
 \end{align*}
-By the definition above $\monom{R}$ is trivially a monoid with the
-unit value $\emptyset$.
+We define the function $\principal : X \to \monom{R}$ to map elements
+of the set $X$ into their representatives in $\monom{R}$:
+\[ \principal(a) = \set{a} \]
 \end{definition}
 
-
+\begin{lemma}[Properties of $\monom{R}$]
+  For any preorder relation $R$ on set $X$ we have:
+  \begin{enumerate}
+    \item $\monom{R}$ is a commutative monoid and hence a \PCM{}. That is,
+      \begin{enumerate}
+      \item the operation of $\monom{R}$, $\cdot_{\monom{R}}$, is
+        associative and commutative
+        \item $\emptyset$ is the unit element of this monoid
+      \end{enumerate}
+    \item for any $A \in \monom{R}$, $A$ is idempotent
+    \item for any $a, b \in X$, $a ~R~ b$ \textbf{if and only if} $\principal(a) \extle{\monom{R}} \principal(b)$
+    \item for any $a, b \in X$, $a ~R~ b$ implies $\principal(a) \cdot \principal(b) = \principal(b)$
+    \item for any $a, b \in X$, $\principal(a) = \principal(b)$ implies $a ~R~ b$ and $b ~R~a$
+    \item if $R$ is antisymmetric then for any $a, b \in X$,
+      $\principal(a) = \principal(b)$ implies $a = b$
+    \item if $R$ is antisymmetric then for any $a, b \in X$,
+      $\principal(a) = \principal(b)$ implies $a = b$
+    \end{enumerate}
+\end{lemma}
+\begin{proof}
+  All properties follow easily from the definition above.
+\end{proof}
 
 \end{document}
 
