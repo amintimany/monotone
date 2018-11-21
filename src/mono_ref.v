@@ -9,7 +9,7 @@ From iris_monotone Require Import monotone.
     monotone refrences. *)
 
 Section Resources.
-  Context {A : ofeT} {R : relation A} `{!ProperPreOrder R}.
+  Context {A : ofeT} {R : relation A}.
 
   Class MonRefG Σ := monrefG {
     MonRefIG_monauth :> inG Σ (authUR (monotoneUR R));
@@ -30,7 +30,8 @@ Section Resources.
   Proof. solve_inG. Qed.
 End Resources.
 
-Global Arguments MonRefG {_} _ {_} _.
+Global Arguments MonRefG {_} _ _.
+Global Arguments MonRefPreG {_} _ _.
 
 Section MonRef.
   Context {A : ofeT} (R : relation A) `{!ProperPreOrder R}.
@@ -72,7 +73,7 @@ Section MonRef.
     iDestruct (own_valid_2 with "HF Hf") as %[Hvl _]%auth_valid_discrete;
       simpl in *.
     iPureIntro; simpl.
-    rewrite left_id_L in Hvl; apply principal_included in Hvl; eauto.
+    rewrite left_id_L in Hvl. apply (principal_included b a) in Hvl; eauto.
   Qed.
 
   Definition atleast_def l v := (∃ γ, registered l γ ∗ MonRefFrag γ v)%I.
@@ -149,7 +150,7 @@ Section MonRef.
     { apply auth_update_alloc.
       apply local_update_unital_discrete => mz _ HM.
       split; first done. rewrite left_id_L in HM.
-      rewrite -HM (comm op) principal_op; eauto. }
+      rewrite -HM (comm op) principal_R_op; eauto. }
     iModIntro; iSplitL "HF"; iExists _; iSplit; eauto.
   Qed.
 
@@ -264,7 +265,7 @@ Section MonRef.
 End MonRef.
 
 Lemma MonRefG_alloc E {A : ofeT} {R : relation A} `{!ProperPreOrder R}
-      `{!heapG Σ, !MonRefPreG Σ} :
+      `{!heapG Σ, !MonRefPreG R Σ} :
   (|={E}=> ∃ _ : MonRefG R Σ, MonRefInv R)%I.
 Proof.
   iIntros "".
