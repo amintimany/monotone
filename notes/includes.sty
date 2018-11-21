@@ -1,0 +1,400 @@
+\usepackage{listings,comment}
+\usepackage{amsfonts,amsmath,amssymb,stmaryrd,amsthm}
+\PassOptionsToPackage{obeyspaces}{url}
+\usepackage{tikz,pgffor,mathtools}
+\usetikzlibrary{calc,fadings,decorations.pathreplacing,arrows,shapes,matrix,
+chains,fit,matrix,decorations.pathmorphing}
+\usepackage[tikz]{mdframed}
+\usepackage{mathpartir,pftools}
+\usepackage{stackengine}
+
+\makeatletter%
+\@ifclassloaded{scrartcl}%
+{
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{example}[definition]{Example}
+\newtheorem{remark}[definition]{remark}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{fact}[definition]{Fact}
+}%
+{}%
+\makeatother%
+
+\newcommand{\important}[1]{
+	\begin{mdframed}[linecolor=red,roundcorner=4pt,linewidth=2pt]
+	#1
+	\end{mdframed}}
+
+% \renewcommand{\lstlanguagefiles}{lstcoq.tex}
+% \lstset{
+%   keepspaces,
+%   language=coq,
+%   morekeywords=[2]{rec,ref},
+%   basewidth={0.50em,0.37em},
+%   showspaces=false,
+%   showstringspaces=false,
+%   mathescape=true,
+%   basicstyle=\small\ttfamily,
+%   backgroundcolor=\color[rgb]{0.85,0.85,0.85},
+%   frame=single,
+%   framerule=0pt,
+%   xleftmargin=\fboxsep,
+%   xrightmargin=\fboxsep,
+%   literate=
+%   	 {≤}{\(\le\)}1
+%      {≠}{\(\neq\)}1
+%      {Γ}{\(\Gamma\)}1
+% 		 {Δ}{\(\Delta\)}1
+% 		 {Ω}{\(\Omega\)}1
+% 		 {δ}{\(\delta\)}1
+% 		 {φ}{\(\phi\)}1
+% 		 {τ}{\(\tau\)}1
+% 		 {γ}{\(\gamma\)}1
+% 		 {σ}{\(\sigma\)}1
+% 		 {←}{\(\leftarrow\)}1
+% 		 {□}{\(\Box\)}2
+% 		 {■}{\(\blacksquare\)}2
+% 		 {▷}{\(\triangleright\)}1
+% 		 {⋃}{\(\bigcup\)}2
+% 		 {✓}{\(\checkmark\)}2
+% 		 {⊢}{\(\vdash\)}1
+% 		 {⊨}{\(\vDash\)}1
+%      {⊣⊢}{\(\provesIff\)}2
+% 		 {→}{\(\to\)}2
+% 		 {∨}{\(\lor\)}2
+% 		 {∧}{\(\land\)}1
+% 		 {∃}{\(\exists\)}1
+% 		 {∀}{\(\forall\)}1
+% 		 {λ}{\(\lambda\)}1
+% 		 {⊑}{\(\sqsubseteq\)}1
+% 		 {∪}{\(\cup\)}1
+% 		 {∖}{\(\setminus\)}1
+% 		 {⊥}{\(\bot\)}1
+%   	 {⊤}{\(\top\)}1
+% 		 {≡}{\(\equiv\)}1
+% 		 {∅}{\(\emptyset\)}1
+% 		 {≫}{\(\gg\)}1
+% 		 {↔}{\(\leftrightarrow\)}1
+% 		 {∈}{\(\in\)}1
+% 		 {Φ}{\(\Phi\)}1
+%   	 {Ψ}{\(\Psi\)}1
+%   	 {∗}{\(*\)}1
+%   	 {↦}{\(\mapsto\)}1
+%   	 {ö}{\({\ddot{\mathtt o}}\)}1
+%   	 {Δ1}{\({\Delta_1}\)}2
+%   	 {Δ2}{\({\Delta_2}\)}2
+%   	 {j1}{\({\mathtt j_1}\)}2
+%   	 {j2}{\({\mathtt j_2}\)}2
+%   	 {P1}{\({\mathtt P_1}\)}2
+%   	 {P2}{\({\mathtt P_2}\)}2
+%   	 {_}{\(\_\!\_\)}1
+%   	 {⟦}{\([\![\)}1
+%   	 {⟧}{\(]\!]\)}1
+%   	 {⋅}{\(\mtimes\)}1
+%   	 {~}{\(\thicksim\)}1
+% 	 {–≻}{\(--\succ\)}2
+% 	 {ₑ}{\({}_e\)}1
+% }
+
+\lstdefinelanguage[]{Fmrc}[objective]{Caml}
+{% general command to set parameter(s)
+basicstyle=\small\ttfamily, % print whole listing small
+keywordstyle=\color{blue}\bfseries,
+morekeywords={cont},
+morekeywords=[2]{Some, None, true, false, null},
+keywordstyle=[2]\bfseries,
+deletekeywords={to},
+morekeywords=[3]{CAS, fold, unfold},
+keywordstyle=[3]\color{blue}\bfseries,
+identifierstyle=, % nothing happens
+commentstyle=\color{green!60!black}, % white comments
+stringstyle=\ttfamily, % typewriter type for strings
+showstringspaces=false, % no special string spaces
+numbers=left,
+numberstyle=\tiny,
+stepnumber=1,
+numbersep=5pt,
+escapeinside={(*@}{@*)},
+mathescape=true
+}
+\lstnewenvironment{Fmrc}[1][]{\renewcommand\lstlistingname{Fmrc}%
+\lstset{language=Fmrc, #1}}%
+{}
+\def\Fmrce{\lstinline[language=Fmrc, basicstyle=\small\ttfamily,]}
+
+\newcommand{\Name}[1]{{#1}}
+\newcommand{\Coq}{\Name{Coq}}
+\newcommand{\LCF}{LCF}
+\newcommand{\HOL}{\Name{HOL}}
+\newcommand{\HOLfour}{\Name{HOL4}}
+\newcommand{\Nqthm}{\Name{Nqthm}}
+\newcommand{\ACLtwo}{\Name{ACL2}}
+\newcommand{\GNU}{\Name{GNU}}
+\newcommand{\OCaml}{\Name{OCaml}}
+\newcommand{\Haskell}{\Name{Haskell}}
+\newcommand{\Lisp}{\Name{Lisp}}
+\newcommand{\ML}{\Name{ML}}
+\hyphenation{isabelle}
+\newcommand{\Isabelle}{\Name{Isabelle}}
+\hyphenation{comp-cert}
+\newcommand{\VSTfull}{\Name{Verified Software Toolchain}}
+\newcommand{\VST}{\Name{VST}}
+\newcommand{\CakeML}{\Name{CakeML}}
+\newcommand{\CerCo}{\Name{CerCo}}
+\newcommand{\CompCert}{\Name{CompCert}}
+\newcommand{\CompCertC}{\Name{CompCert\,C}}
+\newcommand{\CompCertTSO}{\Name{CompCert~TSO}}
+\newcommand{\Cerberus}{\Name{Cerberus}}
+\newcommand{\Cholera}{\Name{Cholera}}
+\newcommand{\OTT}{\Name{OTT}}
+\newcommand{\Lem}{\Name{Lem}}
+\newcommand{\MisraC}{\Name{Misra~C}}
+\newcommand{\Cminor}{\Name{Cminor}}
+\newcommand{\Csharpminor}{\Name{C\(^\sharp\)-minor}}
+\newcommand{\Clight}{\Name{Clight}}
+\newcommand{\Ssreflect}{\Name{Ssreflect}}
+\newcommand{\mathclasses}{\Name{Math-classes}}
+\newcommand{\coqextlib}{\Name{Coq-ext-lib}}
+\newcommand{\DebianFull}{\Name{Debian}}
+\newcommand{\Linux}{\Name{Linux}}
+\newcommand{\Unix}{\Name{Unix}}
+\newcommand{\Windows}{\Name{Windows}}
+\newcommand{\PostgreSQL}{\Name{PostgreSQL}}
+\newcommand{\GCC}{\Name{GCC}}
+\newcommand{\clang}{\Name{Clang}}
+\newcommand{\Rust}{Rust}
+\newcommand{\C}{C}
+\newcommand{\LLVM}{\Name{LLVM}}
+\newcommand{\Java}{Java}
+\newcommand{\Javascript}{Javascript}
+\newcommand{\CIL}{CIL}
+\newcommand{\FrontC}{FrontC}
+\newcommand{\CHtwoO}{\Name{\texorpdfstring{\(\text{CH}_2\text{O}\)}{CH2O}}}
+\newcommand{\coreC}{\CHtwoO{} core \C}
+\newcommand{\abstractC}{\CHtwoO{} abstract \C}
+\newcommand{\Formalin}{\Name{Formalin}}
+\newcommand{\Cplusplus}{C++}
+\newcommand{\Celeven}{C11}
+\newcommand{\Ceightynine}{C89}
+\newcommand{\Cninety}{C90}
+\newcommand{\Cninetynine}{C99}
+\newcommand{\RU}{Radboud University}
+\newcommand{\ANSI}{ANSI}
+\newcommand{\ISO}{ISO}
+\newcommand{\etal}{\textit{et al.}}
+\newcommand{\ala}{\textit{\`a la}}
+\newcommand{\eg}{\textit{e.g.}}
+\newcommand{\cf}{\textit{cf.}}
+\newcommand{\ie}{\textit{i.e.}}
+\newcommand{\Ie}{\textit{I.e.}}
+\newcommand{\etc}{\textit{etc.}}
+\newcommand{\defacto}{\textit{de facto}}
+\newcommand{\viceversa}{\textit{vice versa}}
+\newcommand{\VCC}{\Name{VCC}}
+\newcommand{\Astree}{\Name{Astr\'ee}}
+\newcommand{\FramaC}{\Name{Frama-C}}
+\newcommand{\Jessie}{\Name{Jessie}}
+\newcommand{\Verifast}{\Name{Verifast}}
+\newcommand{\Whythree}{\Name{Why3}}
+\newcommand{\KframeworkShort}{\(\mathbb{K}\)}
+\newcommand{\Kframework}{\KframeworkShort-framework}
+\newcommand{\KCC}{\Name{KCC}}
+\newcommand{\TIOBE}{\Name{TIOBE}}
+\newcommand{\IEEE}{\Name{IEEE}}
+\newcommand{\xeightysix}{x86}
+\newcommand{\ARM}{ARM}
+\newcommand{\PowerPC}{PowerPC}
+\newcommand{\CSmith}{\Name{CSmith}}
+\newcommand{\Microsoft}{\Name{Microsoft}}
+\newcommand{\SLAM}{\Name{SLAM}}
+\newcommand{\BLAST}{\Name{BLAST}}
+\newcommand{\AutoCorres}{\Name{AutoCorres}}
+\newcommand{\Boogie}{\Name{Boogie}}
+\newcommand{\KeyC}{\Name{Key-C}}
+\newcommand{\HAVOC}{\Name{HAVOC}}
+\newcommand{\Lfourverified}{\Name{L4.verified}}
+\newcommand{\Ltac}{\Name{Ltac}}
+\newcommand{\Prolog}{\Name{Prolog}}
+\newcommand{\CCured}{\Name{CCured}}
+\newcommand{\Cyclone}{\Name{Cyclone}}
+\hyphenation{popl-mark}
+\newcommand{\POPLmark}{\Name{POPLmark}}
+\newcommand{\Iris}{Iris}
+\newcommand{\Proofgeneral}{Proof general}
+\newcommand{\CoqIDE}{CoqIDE}
+\newcommand{\CaReSL}{CaReSL}
+\newcommand{\FCSL}{FCSL}
+\newcommand{\iCAP}{iCAP}
+\newcommand{\Autosubst}{Autosubst}
+\newcommand{\Bedrock}{Bedrock}
+\newcommand{\RTac}{RTac}
+
+\newcommand{\PCM}{PCM}
+\newcommand{\RA}{RA}
+
+\newcommand{\extle}[1]{\preceq_{#1}}
+
+\newcommand{\systemF}{System~\(\mathsf{F}\)}
+\newcommand{\systemT}{System~\(\mathsf{T}\)}
+\newcommand{\IPM}{\textsf{IPM}}
+\newcommand{\TheLang}{\(\mathsf{F}_{\mu, \mathit{ref}, \mathit{conc}}\)}
+
+\newcommand{\provesCoq}{\mathrel{\vdash_{\mbox{\!\includegraphics[width=0.7em]{rooster.jpg}}}}}
+
+\newcommand{\len}{\mathrm{length}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CONCRETE LANGUAGE SYNTAX AND SEMANTICS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\textlang}[1]{\textnormal{\texttt{#1}}}
+\newcommand{\langkw}[1]{\textlang{\color{blue} #1}}
+\newcommand{\lvar}[1]{\textit{#1}} % Yes, this makes language-level variables look like logic-level variables. but we still distinguish locally bound variables from global definitions.
+\newcommand{\lvarA}{\lvar{\var}}
+\newcommand{\lvarB}{\lvar{\varB}}
+\newcommand{\lvarC}{\lvar{\varC}}
+
+\newcommand{\loc}{\ell}
+
+\newcommand{\stateCtx}{\small{\textlog{StateCtx}}}
+\newcommand{\stateInv}{\small{\textlog{StateInv}}}
+
+\def\Let#1=#2in{\langkw{let} \spac #1 \mathrel{=} #2 \spac \langkw{in} \spac}
+\def\If#1then{\langkw{if} \spac #1 \spac \langkw{then} \spac}
+\def\Else{\spac\langkw{else} \spac}
+\def\Ref(#1){\langkw{ref}(#1)}
+\def\Rec#1 #2={\langkw{rec}\spac{#1}({#2}) \mathrel{=} }
+\def\Skip{\langkw{skip}}
+\def\Assert{\langkw{assert}}
+\newcommand\Inj[1]{\langkw{inj}_{#1}\spac}
+\newcommand\Proj[1]{\pi_{#1}\spac}
+\def\True{\langkw{true}}
+\def\False{\langkw{false}}
+\def\Match#1with#2=>#3|#4=>#5end{\langkw{match}\spac#1\spac\langkw{with}\spac#2\Ra#3\mid#4\Ra#5\spac\langkw{end}}
+\def\MatchML#1with#2=>#3|#4=>#5end#6{{\arraycolsep=1.4pt\begin{array}[t]{rll}%
+    \multicolumn{3}{l}{\langkw{match}\spac#1\spac\langkw{with}}\\%
+    &#2&\Ra#3\\|&#4&\Ra#5\\%
+    \multicolumn{3}{l}{\langkw{end}#6}%
+  \end{array}}}
+\def\MatchMLL#1with#2=>#3|#4=>#5|#6=>#7end#8{{\arraycolsep=1.4pt\begin{array}[t]{rll}%
+    \multicolumn{3}{l}{\langkw{match}\spac#1\spac\langkw{with}}\\%
+    &#2&\Ra#3\\|&#4&\Ra#5\\|&#6&\Ra#7\\%
+    \multicolumn{3}{l}{\langkw{end}#8}%
+  \end{array}}}
+\def\MatchS#1with#2=>#3end{
+  \langkw{match}\spac#1\spac\langkw{with}\spac#2\Ra#3\spac\langkw{end}}
+\newcommand{\JustMatch}{\langkw{match}}
+\newcommand\CAS{\langkw{CAS}}
+\newcommand*\Fork[1]{\langkw{fork}\spac\set{#1}}
+\newcommand\JustFork{\langkw{fork}}
+\newcommand\deref{\mathop{!}}
+\let\gets\leftarrow
+
+\newcommand{\fold}{\langkw{fold}\spac}
+\newcommand{\unfold}{\langkw{unfold}\spac}
+
+\newcommand{\Op}[1]{\mathrel{#1}}
+
+\newcommand{\binop}{\circledcirc}
+\newcommand{\notbinop}{\not\kern-0.6ex\binop}
+\newcommand{\Plus}{\Op{+}}
+\newcommand{\Minus}{\Op{-}}
+\newcommand{\Mult}{\Op{*}}
+\newcommand{\Eq}{\Op{=}}
+\newcommand{\Lt}{\Op{<}}
+
+\newcommand{\TT}{()}
+
+% types
+\newcommand{\tvar}{X}
+\newcommand{\tvarB}{Y}
+\newcommand{\TVar}{\textdom{Tvar}}
+\newcommand{\TLam}{\Lambda\spac}
+
+\newcommand{\typ}{\tau}
+\newcommand{\typB}{\rho}
+\newcommand{\Tunit}{1}
+\newcommand{\Tbool}{\mathbb{B}}
+\newcommand{\Tnat}{\mathbb{N}}
+\newcommand{\Tarr}{\ra}
+\def\Tall #1.{\forall #1.\spac}%
+\def\Tmu #1.{\mu #1.\spac}%
+\def\Tref(#1){\textlang{ref}(#1)}
+\newcommand{\EqTyp}{\mathsf{EqType}}
+
+\newcommand{\Tenv}{\Xi}
+\newcommand{\env}{\Gamma}
+\newcommand{\typed}[4]{#1 ~|~ #2 \vdash #3 : #4}
+\newcommand{\semtyped}[4]{#1 ~|~ #2 \vDash #3 : #4}
+\newcommand{\ctxtyped}[7]{#1 : (#2~|~ #3; #4) \leadsto (#5~|~ #6; #7)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Proofmode
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\ipat}{\mathsf{ipat}}
+\newcommand{\IName}[1]{#1}
+\newcommand{\IAnom}{?}
+\newcommand{\IDrop}{{\_\!\_}}
+\newcommand{\IAnomPure}{\%}
+\newcommand{\IPersistent}[1]{\#\ #1}
+\newcommand{\IFalse}{[\;]}
+\newcommand{\IConj}[2]{[\;#1\ #2\;]}
+\newcommand{\IDisj}[2]{[\;#1 \mid #2\;]}
+\newcommand{\iFrame}{\$}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lists
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\app}{\mathrel{+\!+}}
+\newcommand{\reverse}{\mathsf{reverse}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Logical relations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\semenv}{\Delta}
+\newcommand{\semVtype}[3]{ \llbracket #1 \vdash #2 \rrbracket_{#3} }
+\newcommand{\semEtype}[3]{ \llbracket #1 \vdash #2 \rrbracket^{\mathcal{E}}_{#3} }
+\newcommand{\semGtype}[3]{ \llbracket #1 \vdash #2 \rrbracket^{\mathcal{G}}_{#3} }
+\newcommand{\sem}[1]{\llbracket #1 \rrbracket}
+
+\newcommand{\cfgg}{\rho}
+\newcommand{\SpecConf}{\textrm{SpecConf}}
+\newcommand{\SpecCtx}{\textrm{SpecCtx}}
+
+\newcommand{\FTLR}{FTLR}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Safety -- contextual refinement -- context typing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\SAFE}{\mathit{Safe}}
+\newcommand{\lectx}{\le_{\mathit{ctx}}}
+\newcommand{\lelog}{\le_{\mathit{log}}}
+\newcommand{\eqctx}{\approx_{\mathit{ctx}}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Programs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Counter}{\textrm{\bfseries Counter}}
+\newcommand{\Stack}{\textrm{\bfseries Stack}}
+\newcommand{\FineGrained}[1]{{#1}_\mathsf{Fine}}
+\newcommand{\CoarseGrained}[1]{{#1}_\mathsf{Coarse}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Stack resources
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\allcells}{\textrm{AllCells}}
+\newcommand{\cell}[2]{#1 \mapsto^{\mathit{stk}} #2}
+\newcommand{\stackowns}{\textrm{StackOwns}}
+\newcommand{\LRel}{\textrm{LRel}}
+
+\newcommand{\invalid}{\valid\!\!\!\!\!\setminus}
+
+\newcommand{\fpfnsmall}{\rightharpoonup^{\textrm{fin}}}
+
+\newcommand{\namespSC}{\namesp.sc}
+
+\newcommand{\lub}{\sqcup}
