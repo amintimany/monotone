@@ -16,24 +16,10 @@ element a ∈ A, is written as principal R a.
 
 *)
 
-Record monotone {A : Type} (R : relation A) `{!PreOrder R} : Type := {
-  monotone_car : list A;
-  monotone_not_nil : bool_decide (monotone_car = []) = false
-}.
-Arguments monotone_car {_ _ _} _.
-Arguments monotone_not_nil {_ _ _} _.
-Local Coercion monotone_car : monotone >-> list.
+Definition monotone {A : Type} (R : relation A) `{!PreOrder R} : Type := list A.
 
 Definition principal {A : Type} (R : relation A) `{!PreOrder R} (a : A) :
-  monotone R :=
-  {| monotone_car := [a]; monotone_not_nil := eq_refl |}.
-
-Lemma monotone_eq `(R : relation A) `{!PreOrder R} (x y : monotone R) :
-  monotone_car x = monotone_car y → x = y.
-Proof.
-  destruct x as [a ?], y as [b ?]; simpl.
-  intros ->; f_equal. apply (proof_irrel _).
-Qed.
+  monotone R := [a].
 
 Class ProperPreOrder {A : Type} `{Dist A} (R : relation A) := {
   ProperPreOrder_preorder :> PreOrder R;
@@ -48,8 +34,7 @@ Implicit Types x y : monotone R.
 
 (* OFE *)
 Instance monotone_dist : Dist (monotone R) :=
-  λ n x y, ∀ a, (∃ b, b ∈ (monotone_car x) ∧ R a b)
-                  ↔ (∃ b, b ∈ (monotone_car y) ∧ R a b).
+  λ n x y, ∀ a, (∃ b, b ∈ x ∧ R a b) ↔ (∃ b, b ∈ y ∧ R a b).
 
 Instance monotone_equiv : Equiv (monotone R) := λ x y, ∀ n, x ≡{n}≡ y.
 
@@ -74,9 +59,7 @@ Canonical Structure monotoneC := OfeT (monotone R) monotone_ofe_mixin.
 Instance monotone_validN : ValidN (monotone R) := λ n x, True.
 Instance monotone_valid : Valid (monotone R) := λ x, True.
 
-Program Instance monotone_op : Op (monotone R) := λ x y,
-  {| monotone_car := monotone_car x ++ monotone_car y |}.
-Next Obligation. by intros [[|??]] y. Qed.
+Program Instance monotone_op : Op (monotone R) := λ x y, x ++ y.
 Instance monotone_pcore : PCore (monotone R) := Some.
 
 Instance monotone_comm : Comm (≡) (@op (monotone R) _).
@@ -134,6 +117,12 @@ Proof.
             /dist /monotone_dist; eauto.
 Qed.
 
+Instance monotone_empty : Unit (monotone R) := @nil A.
+Lemma auth_ucmra_mixin : UcmraMixin (monotone R).
+Proof. split; done. Qed.
+
+Canonical Structure monotoneUR := UcmraT (monotone R) auth_ucmra_mixin.
+
 Global Instance principal_ne : NonExpansive (principal R).
 Proof.
   rewrite /principal /= => n a1 a2 Ha; split; simpl;
@@ -164,6 +153,12 @@ Proof.
     { eexists _; split; first apply elem_of_list_singleton; eauto. reflexivity. }
 Qed.
 
+Global Instance principal_inj_general :
+  Inj (λ a b, R a b ∧ R b a) (≡) (principal R).
+Proof.
+  intros x y Hxy; specialize (Hxy 0); eapply principal_injN_general; eauto.
+Qed.
+
 Global Instance principal_injN {Has : AntiSymm (≡) R} n :
   Inj (dist n) (dist n) (principal R).
 Proof.
@@ -189,7 +184,7 @@ Proof.
   split.
   - intros [x Hx]. destruct (Hx 0 a) as [_ Hab].
     edestruct Hab as [c [?%elem_of_list_singleton ?]]; subst; eauto.
-    { exists a; split; rewrite /=; eauto using elem_of_list_here; reflexivity. }
+    { exists a; split; first by apply elem_of_list_here. reflexivity. }
   - intros Hab. exists (principal R b). rewrite principal_op; eauto.
 Qed.
 
@@ -206,3 +201,4 @@ End monotone.
 Instance: Params (@principal) 1.
 Arguments monotoneC {_} _ {_}.
 Arguments monotoneR {_} _ {_}.
+Arguments monotoneUR {_} _ {_}.

@@ -12,18 +12,18 @@ Section Resources.
   Context {A : ofeT} {R : relation A} `{!ProperPreOrder R}.
 
   Class MonRefG Σ := monrefG {
-    MonRefIG_monauth :> inG Σ (authUR (optionUR (monotoneR R)));
+    MonRefIG_monauth :> inG Σ (authUR (monotoneUR R));
     MonRefIG_register :> inG Σ (authUR (gmapUR loc (agreeR (leibnizC gname))));
     MonRefIG_register_name : gname;
   }.
 
   Class MonRefPreG Σ := monrefPreG {
-    MonRefPreIG_monauth :> inG Σ (authUR (optionUR (monotoneR R)));
+    MonRefPreIG_monauth :> inG Σ (authUR (monotoneUR R));
     MonRefPreIG_register :> inG Σ (authUR (gmapUR loc (agreeR (leibnizC gname))));
   }.
 
   Definition MonRefΣ :=
-    #[GFunctor (authUR (optionUR (monotoneR R)));
+    #[GFunctor (authUR (monotoneUR R));
         GFunctor (authUR (gmapUR loc (agreeR (leibnizC gname))))].
 
   Instance subG_MonRefIGΣ {Σ} : subG MonRefΣ Σ → MonRefPreG Σ.
@@ -57,10 +57,10 @@ Section MonRef.
   Qed.
 
   Definition MonRefFull γ v :=
-    (∃ a, ⌜to_A v = Some a⌝ ∗ own γ (● (Some (principal R a))))%I.
+    (∃ a, ⌜to_A v = Some a⌝ ∗ own γ (● (principal R a)))%I.
 
   Definition MonRefFrag γ v :=
-    (∃ a, ⌜to_A v = Some a⌝ ∗ own γ (◯ (Some (principal R a))))%I.
+    (∃ a, ⌜to_A v = Some a⌝ ∗ own γ (◯ (principal R a)))%I.
 
   Lemma MonRef_related γ v w :
     MonRefFull γ v -∗ MonRefFrag γ w -∗
@@ -72,10 +72,7 @@ Section MonRef.
     iDestruct (own_valid_2 with "HF Hf") as %[Hvl _]%auth_valid_discrete;
       simpl in *.
     iPureIntro; simpl.
-    revert Hvl; rewrite left_id; intros [Hvl|Hvl]%Some_included.
-    - specialize (Hvl O). apply principal_injN_general in Hvl.
-      destruct Hvl; eauto.
-    - apply principal_included in Hvl. eauto.
+    rewrite left_id_L in Hvl; apply principal_included in Hvl; eauto.
   Qed.
 
   Definition atleast_def l v := (∃ γ, registered l γ ∗ MonRefFrag γ v)%I.
@@ -147,15 +144,12 @@ Section MonRef.
   Proof.
     iIntros (Hv Hw HR) "HF".
     iDestruct "HF" as (c Hc) "HF"; simplify_eq.
-    iMod (own_update _ _ (● Some (principal R b) ⋅ ◯ Some (principal R b))
+    iMod (own_update _ _ (● (principal R b) ⋅ ◯ (principal R b))
             with "HF") as "[HF Hf]".
     { apply auth_update_alloc.
-      apply local_update_discrete => mz _ HM.
-      split; first done.
-      destruct mz as [[|]|]; try done.
-      rewrite /= -Some_op; f_equiv.
-      rewrite /= left_id_L in HM; apply Some_equiv_inj in HM; setoid_subst.
-      rewrite (comm op); rewrite principal_op; auto. }
+      apply local_update_unital_discrete => mz _ HM.
+      split; first done. rewrite left_id_L in HM.
+      rewrite -HM (comm op) principal_op; eauto. }
     iModIntro; iSplitL "HF"; iExists _; iSplit; eauto.
   Qed.
 
@@ -165,7 +159,7 @@ Section MonRef.
                            MonRefFull γ v ∗ MonRefFrag γ v.
   Proof.
     iIntros (Hv Hl) "HM".
-    iMod (own_alloc (● (Some (principal R a)) ⋅ (◯ (Some (principal R a)))))
+    iMod (own_alloc (● (principal R a) ⋅ (◯ (principal R a))))
       as (γ) "[HFl HFr]"; first done.
     iMod (own_update _ _ (● toRegister (<[l := γ ]>M) ⋅ ◯ {[l := to_agree γ]})
             with "HM") as "[HM Hreg]".
