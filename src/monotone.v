@@ -185,10 +185,10 @@ Proof.
   intuition subst; eauto.
 Qed.
 
-Lemma principal_op_R `{!Reflexive R} a b x :
-  principal R a ⋅ x ≡ principal R b → R a b.
+Lemma principal_op_R a b x :
+  R a a → principal R a ⋅ x ≡ principal R b → R a b.
 Proof.
-  intros HR.
+  intros Ha HR.
   rewrite /= /monotone_op /=.
   destruct (HR 0 a) as [[z [HR1%elem_of_list_singleton HR2]] _];
     last by subst; eauto.
@@ -196,11 +196,15 @@ Proof.
   eexists _; split; eauto. rewrite elem_of_cons; eauto.
 Qed.
 
+Lemma principal_op_R' `{!Reflexive R} a b x :
+  principal R a ⋅ x ≡ principal R b → R a b.
+Proof. intros; eapply principal_op_R; eauto. Qed.
+
 Lemma principal_included `{!PreOrder R} a b :
   principal R a ≼ principal R b ↔ R a b.
 Proof.
   split.
-  - intros [z Hz]; eapply principal_op_R; rewrite Hz; eauto.
+  - intros [z Hz]; eapply principal_op_R'; rewrite Hz; eauto.
   - intros ?; exists (principal R b). rewrite principal_R_op; eauto.
 Qed.
 

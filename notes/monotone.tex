@@ -159,7 +159,7 @@ $R$ as the \PCM{} where the operation is the least upper bound,
 $\lub$.
 
 \begin{definition}
-  Let $R$ be a preorder on a set $X$. We define the monoid $\monom{R}$
+  Let $R$ be a relation on a set $X$. We define the monoid $\monom{R}$
   as follows:
 \begin{align*}
   |\monom{R}| \eqdef{}& \mathcal{P}(A)/\cong\\
@@ -172,28 +172,73 @@ of the set $X$ into their representatives in $\monom{R}$:
 \[ \principal(a) = \set{a} \]
 \end{definition}
 
-\begin{lemma}[Properties of $\monom{R}$]
-  For any preorder relation $R$ on set $X$ we have:
+\begin{lemma}[General properties of $\monom{R}$] \label{lem:monom-gen-prop}
+  For any relation $R$ on set $X$ the following properties hold.
   \begin{enumerate}
-    \item $\monom{R}$ is a commutative monoid and hence a \PCM{}. That is,
+  \item The construction $\monom{R}$ is a commutative monoid and hence
+    a \PCM{}. That is,
+    \begin{enumerate}
+    \item the operation of $\monom{R}$, $\cdot_{\monom{R}}$, is
+      associative and commutative
+    \item $\emptyset$ is the unit element of this monoid
+    \end{enumerate}
+  \item For any $A \in \monom{R}$, $A$ is idempotent
+  \item For any $a, b \in X$ and $A \in \monom{R}$, If $a ~R~ a$ holds
+    then $\principal(a) \cdot_{\monom{R}} A = \principal(b)$ implies $a ~R~ b$
+  \item If $R$ is transitive then for any $a, b \in X$, $a ~R~ b$
+    implies $\principal(a)  \cdot_{\monom{R}} \principal(b) = \principal(b)$
+  \item For any $a, b \in X$, $\principal(a) = \principal(b)$ implies $a ~R~ b$ and $b ~R~a$
+  \end{enumerate}
+\end{lemma}
+\begin{proof}
+  All properties follow easily from the definition above.
+\end{proof}
+
+\begin{lemma}[properties of $\monom{R}$ of preorder $R$]
+  For any \textbf{preorder} relation $R$ on set $X$ the following
+  properties hold.
+  \begin{enumerate}
+  \item The construction $\monom{R}$ is a commutative monoid and hence
+    a \PCM{}. That is,
       \begin{enumerate}
       \item the operation of $\monom{R}$, $\cdot_{\monom{R}}$, is
         associative and commutative
         \item $\emptyset$ is the unit element of this monoid
       \end{enumerate}
-    \item for any $A \in \monom{R}$, $A$ is idempotent
-    \item for any $a, b \in X$, $a ~R~ b$ \textbf{if and only if} $\principal(a) \extle{\monom{R}} \principal(b)$
-    \item for any $a, b \in X$, $a ~R~ b$ implies $\principal(a) \cdot \principal(b) = \principal(b)$
-    \item for any $a, b \in X$, $\principal(a) = \principal(b)$ implies $a ~R~ b$ and $b ~R~a$
-    \item if $R$ is antisymmetric then for any $a, b \in X$,
-      $\principal(a) = \principal(b)$ implies $a = b$
-    \item if $R$ is antisymmetric then for any $a, b \in X$,
+    \item For any $A \in \monom{R}$, $A$ is idempotent
+    \item For any $a, b \in X$, $a ~R~ b$ \textbf{if and only if} $\principal(a) \extle{\monom{R}} \principal(b)$
+    \item For any $a, b \in X$, $a ~R~ b$ implies $\principal(a) \cdot \principal(b) = \principal(b)$
+    \item For any $a, b \in X$, $\principal(a) = \principal(b)$ implies $a ~R~ b$ and $b ~R~a$
+    \item If $R$ is antisymmetric then for any $a, b \in X$,
       $\principal(a) = \principal(b)$ implies $a = b$
     \end{enumerate}
 \end{lemma}
 \begin{proof}
-  All properties follow easily from the definition above.
+  Follows immediately from Lemma~\ref{lem:monom-gen-prop}.
 \end{proof}
+
+\section{Use case: monotone references}
+We have used the development above of $\monom{R}$ together with
+authoritative monoid construction to construct monotone references.
+
+We derive the following rules for monotone references:\footnote{We
+  omit masks on the fancy update modality and weakest preconditions
+  for simplicity.}
+\begin{mathpar}
+  \inferH{MonRefAlloc}{\loc \mapsto v}{\upd \loc \monmapsto{R} \val}
+  \and
+  \inferH{wpReadMonRef}{}{\hoare{\loc \monmapsto{R}_{q} \val}{\deref
+      \loc}{\var.\; \var = \val \ast \loc \monmapsto{R}_{q} \val}}
+  \and
+  \inferH{wpReadMonRef}{}{\hoare{\loc \monmapsto{R} \val}
+    {\loc \gets \valB \ast \val ~R~\valB}{\var.\; \var = \TT \ast \loc \monmapsto{R} \valB}}
+  \and
+  \inferH{SnapShot}{\loc \monmapsto{R} \val}{\atleast(\loc, \val)}
+  \and
+  \inferH{Recall}{\atleast(\loc, \val) \and \loc \monmapsto{R} \valB}{\val ~R~ \valB}
+  \and
+  \inferH{Persistence}{}{\persistent{\atleast(\loc, \val)}}
+\end{mathpar}
 
 \end{document}
 
