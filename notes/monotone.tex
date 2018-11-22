@@ -230,8 +230,8 @@ We derive the following rules for monotone references:\footnote{We
   \inferH{wpReadMonRef}{}{\hoare{\loc \monmapsto{R}_{q} \val}{\deref
       \loc}{\var.\; \var = \val \ast \loc \monmapsto{R}_{q} \val}}
   \and
-  \inferH{wpReadMonRef}{}{\hoare{\loc \monmapsto{R} \val}
-    {\loc \gets \valB \ast \val ~R~\valB}{\var.\; \var = \TT \ast \loc \monmapsto{R} \valB}}
+  \inferH{wpWriteMonRef}{}{\hoare{\loc \monmapsto{R} \val \ast \val ~R~\valB}
+    {\loc \gets \valB}{\var.\; \var = \TT \ast \loc \monmapsto{R} \valB}}
   \and
   \inferH{SnapShot}{\loc \monmapsto{R} \val}{\atleast(\loc, \val)}
   \and
