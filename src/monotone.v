@@ -174,38 +174,56 @@ Global Instance principal_inj `{!Reflexive R} `{!AntiSymm (≡) R} :
   Inj (≡) (≡) (principal R).
 Proof. intros ???. apply equiv_dist=>n. by apply principal_injN, equiv_dist. Qed.
 
-Lemma principal_R_op `{!Transitive R} a b :
-  R a b → principal R a ⋅ principal R b ≡ principal R b.
+Lemma principal_R_opN `{!Transitive R} n a b :
+  R a b → principal R a ⋅ principal R b ≡{n}≡ principal R b.
 Proof.
   intros HR.
   rewrite /= /monotone_op /=.
-  intros ? z; split; simpl; setoid_rewrite elem_of_list_singleton;
+  intros z; split; simpl; setoid_rewrite elem_of_list_singleton;
     setoid_rewrite elem_of_cons; setoid_rewrite elem_of_list_singleton;
       intros [? Hab']; try destruct Hab'; simplify_eq; eauto.
   intuition subst; eauto.
 Qed.
 
-Lemma principal_op_R a b x :
-  R a a → principal R a ⋅ x ≡ principal R b → R a b.
+Lemma principal_R_op `{!Transitive R} a b :
+  R a b → principal R a ⋅ principal R b ≡ principal R b.
+Proof. by intros ? ?; apply principal_R_opN. Qed.
+
+Lemma principal_op_RN n a b x :
+  R a a → principal R a ⋅ x ≡{n}≡ principal R b → R a b.
 Proof.
   intros Ha HR.
   rewrite /= /monotone_op /=.
-  destruct (HR 0 a) as [[z [HR1%elem_of_list_singleton HR2]] _];
+  destruct (HR a) as [[z [HR1%elem_of_list_singleton HR2]] _];
     last by subst; eauto.
   rewrite /op /monotone_op /principal /=.
   eexists _; split; eauto. rewrite elem_of_cons; eauto.
 Qed.
 
+Lemma principal_op_R a b x :
+  R a a → principal R a ⋅ x ≡ principal R b → R a b.
+Proof. intros ? ?; eapply (principal_op_RN 0); eauto. Qed.
+
 Lemma principal_op_R' `{!Reflexive R} a b x :
   principal R a ⋅ x ≡ principal R b → R a b.
 Proof. intros; eapply principal_op_R; eauto. Qed.
+
+Lemma principal_includedN `{!PreOrder R} n a b :
+  principal R a ≼{n} principal R b ↔ R a b.
+Proof.
+  split.
+  - intros [z Hz]; eapply principal_op_RN; last by rewrite Hz; eauto.
+    reflexivity.
+  - intros ?; exists (principal R b); rewrite principal_R_opN; eauto.
+Qed.
 
 Lemma principal_included `{!PreOrder R} a b :
   principal R a ≼ principal R b ↔ R a b.
 Proof.
   split.
-  - intros [z Hz]; eapply principal_op_R'; rewrite Hz; eauto.
-  - intros ?; exists (principal R b). rewrite principal_R_op; eauto.
+  - intros [z Hz]; eapply principal_op_R; last by rewrite Hz; eauto.
+    reflexivity.
+  - intros ?; exists (principal R b); rewrite principal_R_op; eauto.
 Qed.
 
 (** Internalized properties *)
