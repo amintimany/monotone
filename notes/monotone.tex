@@ -162,7 +162,7 @@ $\lub$.
   Let $R$ be a relation on a set $X$. We define the monoid $\monom{R}$
   as follows:
 \begin{align*}
-  |\monom{R}| \eqdef{}& \mathcal{P}(A)/\cong\\
+  |\monom{R}| \eqdef{}& \mathcal{P}^{\mathrm{fin}}(A)/\cong\\
   A \cong B \eqdef{}& \forall x \in X.\; (\exists a \in A.\; x \le a) \iff (\exists b \in B.\; x \le b)\\
   A \cdot B \eqdef{} & A \cup B\\
   \forall A.\; \valid{A}
@@ -225,20 +225,25 @@ We derive the following rules for monotone references:\footnote{We
   omit masks on the fancy update modality and weakest preconditions
   for simplicity.}
 \begin{mathpar}
-  \inferH{MonRefAlloc}{\loc \mapsto v}{\upd \loc \monmapsto{R} \val}
+  \inferH{MonRefAlloc}{\loc \mapsto v}{\upd \loc \monmapsto{R}{\gname} \val}
   \and
-  \inferH{wpReadMonRef}{}{\hoare{\loc \monmapsto{R}_{q} \val}{\deref
-      \loc}{\var.\; \var = \val \ast \loc \monmapsto{R}_{q} \val}}
+  \inferH{MonRefDealloc}{\loc \monmapsto{R}{\gname} \val}{\loc \mapsto v \and \exists \prop.\; P \ast (\forall \valB.\; v R w \ast \prop \ast \loc \mapsto \valB \vsW \loc \monmapsto{R}{\gname} \valB)}
+  \and
+  \inferH{wpReadMonRef}{}{\hoare{\loc \monmapsto{R}{\gname} \val}{\deref
+      \loc}{\var.\; \var = \val \ast \loc \monmapsto{R}{\gname} \val}}
   \and
   \inferH{wpWriteMonRef}{}{\hoare{\loc \monmapsto{R} \val \ast \val ~R~\valB}
     {\loc \gets \valB}{\var.\; \var = \TT \ast \loc \monmapsto{R} \valB}}
   \and
-  \inferH{SnapShot}{\loc \monmapsto{R} \val}{\atleast(\loc, \val)}
+  \inferH{SnapShot}{\loc \monmapsto{R}{\gname} \val}{\atleast(\loc, \val)}
   \and
-  \inferH{Recall}{\atleast(\loc, \val) \and \loc \monmapsto{R} \valB}{\val ~R~ \valB}
+  \inferH{Recall}{\atleast(\loc, \val) \and \loc \monmapsto{R}{\gname} \valB}{\val ~R~ \valB}
   \and
   \inferH{Persistence}{}{\persistent{\atleast(\loc, \val)}}
 \end{mathpar}
+Here $\vsW$ is a shorthand for $\wand \upd$. The proposition
+$\loc \monmapsto{R} \valB$ expresses ownership of monotone reference
+$\loc$ with value $\valB$.
 
 \end{document}
 

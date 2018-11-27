@@ -56,14 +56,14 @@ Section MonRef.
   Global Instance atleas_presistent l v : Persistent (atleast l v).
   Proof. rewrite atleast_eq /atleast_def; apply _. Qed.
 
-  Definition MonRefMapsto_def l γ q v :=
-    (Exact γ v ∗ atleast γ v ∗ l ↦{q} v)%I.
-  Definition MonRefMapsto_aux l γ q v : seal (MonRefMapsto_def l γ q v).
+  Definition MonRefMapsto_def l γ v :=
+    (Exact γ v ∗ atleast γ v ∗ l ↦ v)%I.
+  Definition MonRefMapsto_aux l γ v : seal (MonRefMapsto_def l γ v).
   Proof. by eexists. Qed.
-  Definition MonRefMapsto l γ q v : iProp Σ := (MonRefMapsto_aux l γ q v).(unseal).
-  Definition MonRefMapsto_eq l γ q v :
-    MonRefMapsto l γ q v = MonRefMapsto_def l γ q v :=
-    (MonRefMapsto_aux l γ q v).(seal_eq).
+  Definition MonRefMapsto l γ v : iProp Σ := (MonRefMapsto_aux l γ v).(unseal).
+  Definition MonRefMapsto_eq l γ v :
+    MonRefMapsto l γ v = MonRefMapsto_def l γ v :=
+    (MonRefMapsto_aux l γ v).(seal_eq).
 
   Lemma MonRef_alloc v a :
     to_A v = Some a → (|==> ∃ γ, Exact γ v ∗ atleast γ v)%I.
@@ -93,7 +93,7 @@ Section MonRef.
   Qed.
 
   Lemma MonRefAlloc l v a :
-    to_A v = Some a → l ↦ v ==∗ ∃ γ, MonRefMapsto l γ 1 v.
+    to_A v = Some a → l ↦ v ==∗ ∃ γ, MonRefMapsto l γ v.
   Proof.
     iIntros (Hv) "Hl".
     iMod (MonRef_alloc v a) as (γ) "[HE Hal]"; eauto.
@@ -101,10 +101,26 @@ Section MonRef.
     rewrite MonRefMapsto_eq /MonRefMapsto_def. iFrame.
   Qed.
 
+  Lemma MonRefDealloc l γ v :
+    MonRefMapsto l γ v -∗
+     ∃ a, ⌜to_A v = Some a⌝ ∗ l ↦ v ∗
+       ∃ P, P ∗ (P -∗ ∀ w b, ⌜to_A w = Some b ∧ R a b⌝ -∗
+                       l ↦ w ==∗ MonRefMapsto l γ w).
+  Proof.
+    rewrite MonRefMapsto_eq /MonRefMapsto_def.
+    iIntros "(HE & Ha & Hl)".
+    iDestruct (MonRef_related with "HE Ha") as %(a & b & Ha & Hb & Hab).
+    iExists _; iSplit; eauto; iFrame.
+    iExists (Exact γ v ∗ atleast γ v)%I; iFrame.
+    iIntros "[HE Ha]". iIntros (w c [Hc Hac]) "Hl".
+    rewrite MonRefMapsto_eq /MonRefMapsto_def; iFrame.
+    iMod (MonRef_update _ _ w with "HE") as "[$ $]"; eauto.
+  Qed.
+
   Lemma wp_Create_MonRef E (v : val) :
     {{{ ∃ a, ⌜to_A v = Some a⌝ }}}
       Alloc v @ E
-    {{{l γ, RET (Lit $ LitLoc l); MonRefMapsto l γ 1 v }}}.
+    {{{l γ, RET #l; MonRefMapsto l γ v }}}.
   Proof.
     iIntros (F) "H HF". iDestruct "H" as (a) "%".
     iApply wp_fupd.
@@ -113,10 +129,10 @@ Section MonRef.
     by iModIntro; iApply "HF".
   Qed.
 
-  Lemma wp_Read_MonRef E l γ q (v : val) :
-    {{{ MonRefMapsto l γ q v }}}
-      ! (Lit $ LitLoc l) @ E
-    {{{RET v; MonRefMapsto l γ q v }}}.
+  Lemma wp_Read_MonRef E l γ (v : val) :
+    {{{ MonRefMapsto l γ v }}}
+      ! #l @ E
+    {{{RET v; MonRefMapsto l γ v }}}.
   Proof.
     rewrite MonRefMapsto_eq /MonRefMapsto_def.
     iIntros (F) "H HF".
@@ -127,9 +143,9 @@ Section MonRef.
 
   Lemma wp_Write_MonRef E l γ (v w : val) a b :
     to_A v = Some a → to_A w = Some b → R a b →
-    {{{ MonRefMapsto l γ 1 v }}}
-      (Lit $ LitLoc l) <- w @ E
-    {{{RET #(); MonRefMapsto l γ 1 w }}}.
+    {{{ MonRefMapsto l γ v }}}
+      #l <- w @ E
+    {{{RET #(); MonRefMapsto l γ w }}}.
   Proof.
     rewrite MonRefMapsto_eq /MonRefMapsto_def.
     iIntros (Hv Hw HR F) "H HF".
@@ -142,14 +158,14 @@ Section MonRef.
     rewrite MonRefMapsto_eq /MonRefMapsto_def; iFrame.
   Qed.
 
-  Lemma snap_shot l γ q v : MonRefMapsto l γ q v ==∗ atleast γ v.
+  Lemma snap_shot l γ v : MonRefMapsto l γ v ==∗ atleast γ v.
   Proof.
     rewrite MonRefMapsto_eq /MonRefMapsto_def atleast_eq /atleast_def.
     iIntros "(HE & Hal & Hl)"; eauto.
   Qed.
 
-  Lemma recall l γ q v w :
-    atleast γ w -∗ MonRefMapsto l γ q v -∗
+  Lemma recall l γ v w :
+    atleast γ w -∗ MonRefMapsto l γ v -∗
             ∃ a b, ⌜to_A w = Some a ∧ to_A v = Some b ∧ R a b⌝.
   Proof.
     rewrite MonRefMapsto_eq /MonRefMapsto_def.

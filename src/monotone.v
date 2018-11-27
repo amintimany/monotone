@@ -4,6 +4,8 @@ Local Arguments validN _ _ _ !_ /.
 Local Arguments valid _ _  !_ /.
 Local Arguments op _ _ _ !_ /.
 Local Arguments pcore _ _ !_ /.
+Local Arguments ofe_dist !_ /.
+Local Arguments ofe_equiv ! _ /.
 
 (**
 
@@ -106,10 +108,10 @@ Proof. by constructor. Qed.
 
 Global Instance monotone_cmra_discrete : CmraDiscrete monotoneR.
 Proof.
-  split; auto;
-    rewrite /OfeDiscrete /Discrete
-            /equiv /ofe_equiv /= /cmra_equiv /= /monotone_equiv
-            /dist /monotone_dist; eauto.
+  split; auto.
+  intros ? ?.
+  rewrite /dist /equiv /= /cmra_dist /cmra_equiv /=
+          /monotone_dist /monotone_equiv /dist /monotone_dist; eauto.
 Qed.
 
 Instance monotone_empty : Unit (monotone R) := @nil A.
@@ -174,20 +176,39 @@ Global Instance principal_inj `{!Reflexive R} `{!AntiSymm (≡) R} :
   Inj (≡) (≡) (principal R).
 Proof. intros ???. apply equiv_dist=>n. by apply principal_injN, equiv_dist. Qed.
 
-Lemma principal_R_opN `{!Transitive R} n a b :
-  R a b → principal R a ⋅ principal R b ≡{n}≡ principal R b.
+Lemma principal_R_opN_base `{!Transitive R} n x y :
+  (∀ b, b ∈ y → ∃ c, c ∈ x ∧ R b c) → y ⋅ x ≡{n}≡ x.
 Proof.
   intros HR.
   rewrite /= /monotone_op /=.
-  intros z; split; simpl; setoid_rewrite elem_of_list_singleton;
-    setoid_rewrite elem_of_cons; setoid_rewrite elem_of_list_singleton;
-      intros [? Hab']; try destruct Hab'; simplify_eq; eauto.
-  intuition subst; eauto.
+  intros z; split; setoid_rewrite elem_of_app.
+  - intros [b [[Hb|] ?]]; last by eauto.
+    destruct (HR _ Hb) as [d [Hd1 Hd2]]; eauto.
+  - intros [b [Hb1 Hb2]]; eauto.
+Qed.
+
+Lemma principal_R_opN `{!Transitive R} n a b :
+  R a b → principal R a ⋅ principal R b ≡{n}≡ principal R b.
+Proof.
+  intros. apply principal_R_opN_base.
+  intros c; rewrite /principal elem_of_list_singleton => ->.
+  eexists; split; rewrite ?elem_of_list_singleton; eauto.
 Qed.
 
 Lemma principal_R_op `{!Transitive R} a b :
   R a b → principal R a ⋅ principal R b ≡ principal R b.
 Proof. by intros ? ?; apply principal_R_opN. Qed.
+
+Lemma principal_op_RN n a b x :
+  R a a → principal R a ⋅ x ≡{n}≡ principal R b → R a b.
+Proof.
+  intros Ha HR.
+  rewrite /= /monotone_op /=.
+  destruct (HR a) as [[z [HR1%elem_of_list_singleton HR2]] _];
+    last by subst; eauto.
+  rewrite /op /monotone_op /principal /=.
+  eexists _; split; eauto. rewrite elem_of_cons; eauto.
+Qed.
 
 Lemma principal_op_RN n a b x :
   R a a → principal R a ⋅ x ≡{n}≡ principal R b → R a b.

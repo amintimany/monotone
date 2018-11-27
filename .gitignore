@@ -11,3 +11,4 @@ Makefile.coq.conf
 *.synctex.gz
 *.log
 */auto/*
+.coqdeps.d
