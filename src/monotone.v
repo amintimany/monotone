@@ -210,17 +210,6 @@ Proof.
   eexists _; split; eauto. rewrite elem_of_cons; eauto.
 Qed.
 
-Lemma principal_op_RN n a b x :
-  R a a → principal R a ⋅ x ≡{n}≡ principal R b → R a b.
-Proof.
-  intros Ha HR.
-  rewrite /= /monotone_op /=.
-  destruct (HR a) as [[z [HR1%elem_of_list_singleton HR2]] _];
-    last by subst; eauto.
-  rewrite /op /monotone_op /principal /=.
-  eexists _; split; eauto. rewrite elem_of_cons; eauto.
-Qed.
-
 Lemma principal_op_R a b x :
   R a a → principal R a ⋅ x ≡ principal R b → R a b.
 Proof. intros ? ?; eapply (principal_op_RN 0); eauto. Qed.
@@ -258,7 +247,6 @@ Proof.
 Qed.
 End monotone.
 
-Instance: Params (@principal) 1.
 Arguments monotoneC {_} _.
 Arguments monotoneR {_} _.
 Arguments monotoneUR {_} _.

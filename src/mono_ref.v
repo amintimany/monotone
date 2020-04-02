@@ -26,7 +26,7 @@ Global Arguments MonRefG {_} _ _.
 
 Section MonRef.
   Context {A : ofeT} (R : relation A) `{!ProperPreOrder R}.
-  Context (to_A : val → option A).
+  Context (to_A : val heap_lang → option A).
   Context `{!MonRefG R Σ, !heapG Σ}.
 
   Definition Exact γ v :=
@@ -47,10 +47,10 @@ Section MonRef.
     iIntros "HF Hf".
     iDestruct "HF" as (a ->) "HF".
     iDestruct "Hf" as (b ->) "Hf".
-    iDestruct (own_valid_2 with "HF Hf") as %[Hvl _]%auth_valid_discrete;
+    iDestruct (own_valid_2 with "HF Hf") as %[Hvl _]%auth_both_valid;
       simpl in *.
     iPureIntro; simpl.
-    rewrite left_id_L in Hvl. apply (principal_included b a) in Hvl; eauto.
+    apply (principal_included b a) in Hvl; eauto.
   Qed.
 
   Global Instance atleas_presistent l v : Persistent (atleast l v).
@@ -66,13 +66,12 @@ Section MonRef.
     (MonRefMapsto_aux l γ v).(seal_eq).
 
   Lemma MonRef_alloc v a :
-    to_A v = Some a → (|==> ∃ γ, Exact γ v ∗ atleast γ v)%I.
+    to_A v = Some a → ⊢ (|==> ∃ γ, Exact γ v ∗ atleast γ v)%I.
   Proof.
     setoid_rewrite atleast_eq. rewrite /atleast_def /Exact.
     iIntros (Hv).
     iMod (own_alloc (● (principal R a) ⋅ ◯ (principal R a))) as (γ) "[HF Hf]".
-    { rewrite auth_valid_eq /=; split; last done. intros ?; rewrite left_id.
-      by eapply (principal_includedN). }
+    { by apply auth_both_valid. }
     iModIntro; iExists _; iSplitL "HF"; iFrame; eauto.
   Qed.
 
@@ -117,7 +116,7 @@ Section MonRef.
     iMod (MonRef_update _ _ w with "HE") as "[$ $]"; eauto.
   Qed.
 
-  Lemma wp_Create_MonRef E (v : val) :
+  Lemma wp_Create_MonRef E (v : val heap_lang) :
     {{{ ∃ a, ⌜to_A v = Some a⌝ }}}
       Alloc v @ E
     {{{l γ, RET #l; MonRefMapsto l γ v }}}.
@@ -129,7 +128,7 @@ Section MonRef.
     by iModIntro; iApply "HF".
   Qed.
 
-  Lemma wp_Read_MonRef E l γ (v : val) :
+  Lemma wp_Read_MonRef E l γ (v : val heap_lang) :
     {{{ MonRefMapsto l γ v }}}
       ! #l @ E
     {{{RET v; MonRefMapsto l γ v }}}.
@@ -141,7 +140,7 @@ Section MonRef.
     iApply "HF"; iFrame "#"; iFrame.
   Qed.
 
-  Lemma wp_Write_MonRef E l γ (v w : val) a b :
+  Lemma wp_Write_MonRef E l γ (v w : val heap_lang) a b :
     to_A v = Some a → to_A w = Some b → R a b →
     {{{ MonRefMapsto l γ v }}}
       #l <- w @ E

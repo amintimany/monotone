@@ -12,3 +12,6 @@ Makefile.coq.conf
 *.log
 */auto/*
 .coqdeps.d
+*.d
+*.vok
+*.vos
