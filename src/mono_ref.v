@@ -85,9 +85,7 @@ Section MonRef.
     iMod (own_update _ _ (● (principal R b) ⋅ ◯ (principal R b))
             with "HF") as "[HF Hf]".
     { apply auth_update_alloc.
-      apply local_update_unital_discrete => mz _ HM.
-      split; first done. rewrite left_id_L in HM.
-      rewrite -HM (comm op) principal_R_op; eauto. }
+      by apply monotone_local_update_grow. }
     iModIntro; iSplitL "HF"; iExists _; iSplit; eauto.
   Qed.
 

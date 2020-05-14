@@ -1,4 +1,4 @@
-From iris.algebra Require Export cmra.
+From iris.algebra Require Export cmra auth.
 From iris.base_logic Require Import base_logic.
 Local Arguments validN _ _ _ !_ /.
 Local Arguments valid _ _  !_ /.
@@ -245,6 +245,41 @@ Proof.
   - intros Hx. exact: principal_injN.
   - intros Hx. exact: principal_ne.
 Qed.
+
+Lemma monotone_local_update_grow `{!Transitive R} a q na:
+  R a na →
+  (principal R a, q) ~l~> (principal R na, principal R na).
+Proof.
+  intros Hana.
+  apply local_update_unital_discrete.
+  intros z _ Habz.
+  split; first done.
+  intros n; specialize (Habz n).
+  intros x; split.
+  - intros (y & ->%elem_of_list_singleton & Hy2).
+    by exists na; split; first constructor.
+  - intros (y & [->|Hy1]%elem_of_cons & Hy2).
+    + by exists na; split; first constructor.
+    + exists na; split; first constructor.
+      specialize (Habz x) as [_ [c [->%elem_of_list_singleton Hc2]]].
+      { exists y; split; first (by apply elem_of_app; right); eauto. }
+      etrans; eauto.
+Qed.
+
+Lemma monotone_local_update_get_frag `{!PreOrder R} a na:
+  R na a →
+  (principal R a, ε) ~l~> (principal R a, principal R na).
+Proof.
+  intros Hana.
+  apply local_update_unital_discrete.
+  intros z _.
+  rewrite left_id.
+  intros <-.
+  split; first done.
+  apply monotone_included.
+  by apply principal_included.
+Qed.
+
 End monotone.
 
 Arguments monotoneC {_} _.
