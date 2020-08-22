@@ -3,9 +3,9 @@ From Coq.Program Require Import Tactics.
 From Categories.Essentials Require Import Facts_Tactics.
 From Categories Require Import Category.Main Functor.Main.
 From Coq.Classes Require Import RelationClasses.
-From cat_monotone Require Import PreOrder.
+From cat_monotone Require Import PartialOrder.
 
-(** For us, an RA is basically a commutative monoid. *)
+(** For us, an RA is basically a partial commutative monoid. *)
 Record RA := {
   RA_car :> Type;
   op : RA_car → RA_car → RA_car;
@@ -14,8 +14,7 @@ Record RA := {
   op_comm x y : op x y = op y x;
   op_assoc x y z : op (op x y) z = op x (op y z);
   unit_valid : valid unit;
-  unit_left x : op unit x = x;
-  unit_right x : op x unit = x;
+  unit_id x : op unit x = x;
 }.
 
 Record RA_morphism (r r' : RA) := {
@@ -81,14 +80,10 @@ Qed.
 
 Definition extension (r : RA) (x y : r) : Prop := ∃ z, y = op r x z.
 
-Program Definition extension_PO (r : RA) : PO :=
-{| PO_type := r;
-   PO_car := extension r
-|}.
-Next Obligation.
+Program Definition extension_PreOrder (r : RA) : PreOrder (extension r).
 Proof.
   split.
-  - intros x; exists (unit r); rewrite unit_right; trivial.
+  - intros x; exists (unit r); rewrite op_comm, unit_id; trivial.
   - intros x y z [u Hu] [v Hv].
     exists (op r u v).
     rewrite Hv, Hu, op_assoc; trivial.
@@ -96,26 +91,26 @@ Qed.
 
 Local Obligation Tactic := idtac.
 
-Program Definition extension_Fun_mor (r r' : RA) (f : RA_morphism r r') :
-  PO_morphism (extension_PO r) (extension_PO r') :=
-  {| POM_mor x := f x |}.
-Next Obligation.
-Proof.
-  intros r r' f x y [z ->]; cbn.
-  rewrite RAM_resp.
-  exists (f z); trivial.
-Qed.
+(* Program Definition extension_Fun_mor (r r' : RA) (f : RA_morphism r r') : *)
+(*   PO_morphism (extension_PO r) (extension_PO r') := *)
+(*   {| POM_mor x := f x |}. *)
+(* Next Obligation. *)
+(* Proof. *)
+(*   intros r r' f x y [z ->]; cbn. *)
+(*   rewrite RAM_resp. *)
+(*   exists (f z); trivial. *)
+(* Qed. *)
 
-Program Definition extension_functor : Functor RA_cat PO_cat :=
-  {| FO := extension_PO;
-     FA := extension_Fun_mor |}.
-Next Obligation.
-Proof.
-  intros r.
-  apply POM_morphism_eq; cbn; trivial.
-Qed.
-Next Obligation.
-Proof.
-  intros r r' r'' f g.
-  apply POM_morphism_eq; cbn; trivial.
-Qed.
+(* Program Definition extension_functor : Functor RA_cat PO_cat := *)
+(*   {| FO := extension_PO; *)
+(*      FA := extension_Fun_mor |}. *)
+(* Next Obligation. *)
+(* Proof. *)
+(*   intros r. *)
+(*   apply POM_morphism_eq; cbn; trivial. *)
+(* Qed. *)
+(* Next Obligation. *)
+(* Proof. *)
+(*   intros r r' r'' f g. *)
+(*   apply POM_morphism_eq; cbn; trivial. *)
+(* Qed. *)

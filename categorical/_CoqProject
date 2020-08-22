@@ -1,6 +1,7 @@
 -Q . cat_monotone
 
 RA.v
-PreOrder.v
+PartialOrder.v
+Lattice.v
 monotone.v
 adjunction.v

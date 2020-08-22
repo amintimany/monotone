@@ -7,7 +7,8 @@ From Coq.Classes Require Import RelationClasses.
 Record PO := {
   PO_type :> Type;
   PO_car :> PO_type → PO_type → Prop;
-  PO_PO : PreOrder PO_car }.
+  PO_PO : PreOrder PO_car;
+  PO_antisymm : ∀ x y, PO_car x y → PO_car y x → x = y }.
 
 Existing Instance PO_PO.
 

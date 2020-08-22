@@ -2,7 +2,7 @@ From Coq.Unicode Require Import Utf8.
 From Coq.Program Require Import Tactics.
 From Categories.Essentials Require Import Facts_Tactics Quotient.
 From Categories Require Import Category.Main Functor.Main.
-From cat_monotone Require Import RA PreOrder.
+From cat_monotone Require Import PartialOrder Lattice.
 From Coq.Lists Require Import List.
 
 Section monotone.
@@ -108,25 +108,29 @@ Section monotone.
   Lemma in_principal x y : In x (representative (principal y)) → po x y.
   Proof.
     intros Hy.
-   pose proof (representative_of_class_of monotone_rel (principal_base y) x)
+    pose proof (representative_of_class_of monotone_rel (principal_base y) x)
       as [(z & Hz1 & Hz2) _].
     { exists x; split; [trivial|reflexivity]. }
     apply in_inv in Hz1 as [<-|?%in_nil]; tauto.
   Qed.
 
-  Program Definition monotone_RA : RA :=
-    {| RA_car := monotone;
-       op := monotone_op;
-       unit := monotone_unit;
-       valid x := True |}.
-  Next Obligation.
+  Lemma is_in_principal x : ∃ y, In y (representative (principal x)) ∧ po x y.
+  Proof.
+    destruct (representative_represented _ (principal x) x) as
+        [(z & Hz1 & H2) _]; [|eauto; fail].
+    exists x; split; simpl; [auto|reflexivity].
+  Qed.
+
+  Lemma monotone_op_comm x y : monotone_op x y = monotone_op y x.
   Proof.
     apply class_of_inj.
     intros c.
     setoid_rewrite in_app_iff.
     split; (intros (?&?&?); eexists; split; [|eassumption]); tauto.
   Qed.
-  Next Obligation.
+
+  Lemma monotone_op_assoc x y z :
+    monotone_op (monotone_op x y) z = monotone_op x (monotone_op y z).
   Proof.
     apply class_of_inj.
     intros c.
@@ -153,7 +157,8 @@ Section monotone.
           etransitivity; [eassumption|etransitivity; eauto].
         * exists e; split; [|etransitivity]; eauto.
   Qed.
-  Next Obligation.
+
+  Lemma monotone_op_unit_id x : monotone_op monotone_unit x = x.
   Proof.
     apply (uniquely_represented _ _ _ (representative x) (representative x));
     [|apply representative_represented|reflexivity].
@@ -170,26 +175,86 @@ Section monotone.
       exists e; split; [auto; fail|].
       etransitivity; eauto.
   Qed.
-  Next Obligation.
+
+  Lemma monotone_op_idemp x : monotone_op x x = x.
   Proof.
-    apply (uniquely_represented _ _ _ (representative x) (representative x));
-    [|apply representative_represented|reflexivity].
-    apply (related_represented
-             _ _ (representative (monotone_op x monotone_unit))).
-    { apply representative_represented. }
+    eapply uniquely_represented;
+      [apply representative_represented|apply representative_represented|].
     intros c; split.
     - intros (d & Hd1 & Hd2).
       apply in_monotone_op in Hd1 as
-          [(e & He1 & He2)|(e & He1%monotone_unit_empty & He2)]; [|tauto].
-      exists e; split; [|etransitivity]; eauto.
+          [(e & He1 & He2)|(e & He1 & He2)].
+      + exists e; split; [|etransitivity]; eauto.
+      + exists e; split; [|etransitivity]; eauto.
     - intros (d & Hd1 & Hd2).
-      destruct (in_monotone_op_back1 _ _ monotone_unit Hd1) as (e & He1 & He2).
+      destruct (in_monotone_op_back2 _ x _ Hd1) as (e & He1 & He2).
       exists e; split; [auto; fail|].
       etransitivity; eauto.
   Qed.
 
+  Definition monotone_order x y := ∃ z, y = monotone_op x z.
+
+  Local Obligation Tactic := idtac.
+
+  Program Definition monotone_order_PO : PO :=
+    {| PO_type := monotone;
+       PO_car := monotone_order
+    |}.
+  Next Obligation.
+  Proof.
+    split.
+    - intros x; exists monotone_unit.
+      rewrite monotone_op_comm, monotone_op_unit_id; trivial.
+    - intros x y z [u Hu] [v Hv].
+      exists (monotone_op u v).
+      rewrite Hv, Hu, monotone_op_assoc; trivial.
+  Qed.
+  Next Obligation.
+  Proof.
+    intros x y [z ->] [u ->].
+    rewrite !monotone_op_assoc.
+    rewrite (monotone_op_comm z (monotone_op _ _)).
+    rewrite !monotone_op_assoc.
+    rewrite monotone_op_idemp.
+    rewrite (monotone_op_comm z); trivial.
+  Qed.
+
+  Program Definition monotone_JSLB : JSLB :=
+    {| JSLB_PO := monotone_order_PO;
+       join := monotone_op;
+       bot := monotone_unit; |}.
+  Next Obligation.
+  Proof.
+    intros x; exists x; rewrite monotone_op_unit_id; trivial.
+  Qed.
+  Next Obligation.
+  Proof.
+    intros x; rewrite monotone_op_comm, monotone_op_unit_id; trivial.
+  Qed.
+  Next Obligation.
+  Proof.
+    intros x y; exists y; trivial.
+  Qed.
+  Next Obligation.
+  Proof.
+    intros x y; exists x; rewrite monotone_op_comm; trivial.
+  Qed.
+  Next Obligation.
+  Proof.
+    intros x y z [u Hxz] [v Hyz]; simpl in *.
+    exists (monotone_op u v).
+    rewrite (monotone_op_comm u v).
+    rewrite (monotone_op_assoc x).
+    rewrite <- (monotone_op_assoc y).
+    rewrite <- Hyz.
+    rewrite (monotone_op_comm z u).
+    rewrite <- (monotone_op_assoc x).
+    rewrite <- Hxz.
+    rewrite monotone_op_idemp; trivial.
+  Qed.
+
   Lemma monotone_correct x y :
-    po x y ↔ extension monotone_RA (principal x) (principal y).
+    po x y ↔ monotone_order (principal x) (principal y).
   Proof.
     split.
     - intros Hxy.
@@ -227,11 +292,61 @@ Section monotone.
 
 End monotone.
 
-Program Definition monotone_RA_morph (po po' : PO) (f : PO_morphism po po') :
-  RA_morphism (monotone_RA po) (monotone_RA po') :=
-  {| RAM_mor x := class_of (monotone_rel po') (map f (representative x)) |}.
+Local Obligation Tactic := idtac.
+
+Program Definition PO_morphism_of_monotone_JSLB_morph
+        po po' (f : PO_morphism po po') :
+  PO_morphism (monotone_order_PO po) (monotone_order_PO po') :=
+{| POM_mor x := class_of (monotone_rel po') (map f (representative x))
+|}.
 Next Obligation.
 Proof.
+  intros po po' f x y [u ->]; simpl.
+  exists (class_of (monotone_rel po') (map f (representative u))).
+  apply class_of_inj.
+  intros c; split; setoid_rewrite in_app_iff.
+  - intros (d & Hd1 & Hd2).
+    apply in_map_iff in Hd1 as [d' [<- Hd']].
+    apply in_monotone_op in Hd' as [(z & Hz1 & Hz2)|(z & Hz1 & Hz2)].
+    + destruct (is_in_monotone_preresntative_class_of
+                  po' (f z) (map f (representative x)))
+        as (w & Hw1 & Hw2).
+      { apply in_map; trivial. }
+      exists w; split; [left; trivial; fail|].
+      transitivity (f d'); [trivial; fail|].
+      transitivity (f z); [|trivial; fail].
+      apply POM_mono; trivial.
+    + destruct (is_in_monotone_preresntative_class_of
+                  po' (f z) (map f (representative u)))
+        as (w & Hw1 & Hw2).
+      { apply in_map; trivial. }
+      exists w; split; [right; trivial; fail|].
+      transitivity (f d'); [trivial; fail|].
+      transitivity (f z); [|trivial; fail].
+      apply POM_mono; trivial.
+  - intros (d & [Hd1|Hd1] & Hd2).
+    + apply in_monotone_preresntative_class_of in Hd1 as (e & He1 & He2).
+      apply in_map_iff in He1 as [e' [<- He']].
+      apply (in_monotone_op_back1 _ _ _ u) in He' as (i & Hi1 & Hi2).
+      exists (f i); split; [apply in_map; trivial; fail|].
+      transitivity d; [assumption|].
+      transitivity (f e'); [assumption|].
+      apply POM_mono; trivial.
+    + apply in_monotone_preresntative_class_of in Hd1 as (e & He1 & He2).
+      apply in_map_iff in He1 as [e' [<- He']].
+      apply (in_monotone_op_back2 _ _ x) in He' as (i & Hi1 & Hi2).
+      exists (f i); split; [apply in_map; trivial; fail|].
+      transitivity d; [assumption|].
+      transitivity (f e'); [assumption|].
+      apply POM_mono; trivial.
+Qed.
+
+Program Definition monotone_JSLB_morph po po' (f : PO_morphism po po') :
+    JSLB_morphism (monotone_JSLB po) (monotone_JSLB po') :=
+{| JSLBM_mor := PO_morphism_of_monotone_JSLB_morph po po' f |}.
+Next Obligation.
+Proof.
+  intros po po' f x y; simpl.
   apply class_of_inj.
   intros c; split; setoid_rewrite in_app_iff.
   - intros (d & Hd1 & Hd2).
@@ -271,6 +386,7 @@ Proof.
 Qed.
 Next Obligation.
 Proof.
+  intros po po' f.
   apply class_of_inj.
   intros x; split.
   - intros (d & Hd1 & Hd2).
@@ -278,15 +394,14 @@ Proof.
   - intros (d & [] & Hd2).
 Qed.
 
-Local Obligation Tactic := idtac.
-
-Program Definition monotone_RA_functor : Functor PO_cat RA_cat :=
-  {| FO := monotone_RA;
-     FA := monotone_RA_morph |}.
+Program Definition monotone_JSLB_functor : Functor PO_cat JSLB_cat :=
+  {| FO := monotone_JSLB;
+     FA := monotone_JSLB_morph |}.
 Next Obligation.
 Proof.
   intros po.
-  apply RAM_morphism_eq.
+  apply JSLBM_morphism_eq.
+  apply POM_morphism_eq.
   intros a; cbn.
   rewrite map_id.
   apply class_of_representative.
@@ -294,7 +409,8 @@ Qed.
 Next Obligation.
 Proof.
   intros po po' po'' f g.
-  apply RAM_morphism_eq.
+  apply JSLBM_morphism_eq.
+  apply POM_morphism_eq.
   intros x; cbn.
   apply class_of_inj.
   intros y; split.
