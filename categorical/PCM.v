@@ -6,81 +6,82 @@ From Coq.Classes Require Import RelationClasses.
 From cat_monotone Require Import PartialOrder.
 
 (** For us, an RA is basically a partial commutative monoid. *)
-Record RA := {
-  RA_car :> Type;
-  op : RA_car → RA_car → RA_car;
-  unit : RA_car;
-  valid : RA_car → Prop;
+Record PCM := {
+  PCM_car :> Type;
+  op : PCM_car → PCM_car → PCM_car;
+  unit : PCM_car;
+  valid : PCM_car → Prop;
   op_comm x y : op x y = op y x;
   op_assoc x y z : op (op x y) z = op x (op y z);
   unit_valid : valid unit;
   unit_id x : op unit x = x;
+  valid_op x y : valid (op x y) → valid x
 }.
 
-Record RA_morphism (r r' : RA) := {
-  RAM_mor :> r → r';
-  RAM_valid x : valid r x → valid r' (RAM_mor x);
-  RAM_resp x y : RAM_mor (op r x y) = op r' (RAM_mor x) (RAM_mor y);
-  RAM_unit : RAM_mor (unit r) = unit r' }.
+Record PCM_morphism (r r' : PCM) := {
+  PCMM_mor :> r → r';
+  PCMM_valid x : valid r x → valid r' (PCMM_mor x);
+  PCMM_resp x y : PCMM_mor (op r x y) = op r' (PCMM_mor x) (PCMM_mor y);
+  PCMM_unit : PCMM_mor (unit r) = unit r' }.
 
-Arguments RAM_mor {_ _} _ _.
+Arguments PCMM_mor {_ _} _ _.
 
-Lemma RAM_morphism_eq (r r' : RA) (f g : RA_morphism r r') :
+Lemma PCMM_morphism_eq (r r' : PCM) (f g : PCM_morphism r r') :
   (∀ x, f x = g x) → f = g.
 Proof.
   intros Hfg.
-  assert (RAM_mor f = RAM_mor g) by (FunExt; auto).
+  assert (PCMM_mor f = PCMM_mor g) by (FunExt; auto).
   destruct f as [f Hfv Hfresp Hfunit]; destruct g as [g Hgv Hgresp Hgunit];
     cbn in *; subst.
   PIR; trivial.
 Qed.
 
-Program Definition RAM_id (r : RA) : RA_morphism r r :=
-  {| RAM_mor x := x |}.
+Program Definition PCMM_id (r : PCM) : PCM_morphism r r :=
+  {| PCMM_mor x := x |}.
 
-Program Definition RAM_comp (r r' r'' : RA)
-        (f : RA_morphism r r') (g : RA_morphism r' r'') : RA_morphism r r'' :=
-  {| RAM_mor x := g (f x) |}.
+Program Definition PCMM_comp (r r' r'' : PCM)
+        (f : PCM_morphism r r') (g : PCM_morphism r' r'') : PCM_morphism r r'' :=
+  {| PCMM_mor x := g (f x) |}.
 Next Obligation.
 Proof.
-  repeat apply RAM_valid; trivial.
+  repeat apply PCMM_valid; trivial.
 Qed.
 Next Obligation.
 Proof.
-  repeat rewrite RAM_resp; trivial.
+  repeat rewrite PCMM_resp; trivial.
 Qed.
 Next Obligation.
 Proof.
-  repeat rewrite RAM_unit; trivial.
+  repeat rewrite PCMM_unit; trivial.
 Qed.
 
-Program Definition RA_cat : Category :=
-  {| Obj := RA;
-    Hom := RA_morphism;
-    compose := RAM_comp;
-    id := RAM_id |}.
+Program Definition PCM_cat : Category :=
+  {| Obj := PCM;
+    Hom := PCM_morphism;
+    compose := PCMM_comp;
+    id := PCMM_id |}.
 Next Obligation.
 Proof.
-  apply RAM_morphism_eq; cbn; trivial.
+  apply PCMM_morphism_eq; cbn; trivial.
 Qed.
 Next Obligation.
 Proof.
-  apply RAM_morphism_eq; cbn; trivial.
+  apply PCMM_morphism_eq; cbn; trivial.
 Qed.
 Next Obligation.
 Proof.
-  apply RAM_morphism_eq; cbn; trivial.
+  apply PCMM_morphism_eq; cbn; trivial.
 Qed.
 Next Obligation.
 Proof.
-  apply RAM_morphism_eq; cbn; trivial.
+  apply PCMM_morphism_eq; cbn; trivial.
 Qed.
 
 (** extension order forms a functor from RA_cat to PO_cat. *)
 
-Definition extension (r : RA) (x y : r) : Prop := ∃ z, y = op r x z.
+Definition extension (r : PCM) (x y : r) : Prop := ∃ z, y = op r x z.
 
-Program Definition extension_PreOrder (r : RA) : PreOrder (extension r).
+Program Definition extension_PreOrder (r : PCM) : PreOrder (extension r).
 Proof.
   split.
   - intros x; exists (unit r); rewrite op_comm, unit_id; trivial.
@@ -114,3 +115,4 @@ Local Obligation Tactic := idtac.
 (*   intros r r' r'' f g. *)
 (*   apply POM_morphism_eq; cbn; trivial. *)
 (* Qed. *)
+ 

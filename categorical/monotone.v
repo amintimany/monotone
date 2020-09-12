@@ -229,10 +229,6 @@ Section monotone.
   Qed.
   Next Obligation.
   Proof.
-    intros x; rewrite monotone_op_comm, monotone_op_unit_id; trivial.
-  Qed.
-  Next Obligation.
-  Proof.
     intros x y; exists y; trivial.
   Qed.
   Next Obligation.

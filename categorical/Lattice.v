@@ -3,7 +3,7 @@ From Coq.Program Require Import Tactics.
 From Categories.Essentials Require Import Facts_Tactics.
 From Categories Require Import Category.Main Functor.Main.
 From Coq.Classes Require Import RelationClasses.
-From cat_monotone Require Import PartialOrder RA.
+From cat_monotone Require Import PartialOrder PCM.
 
 (** We define join semi-lattices with a bottom element.  *)
 Record JSLB := {
@@ -11,7 +11,6 @@ Record JSLB := {
   join : JSLB_PO → JSLB_PO → JSLB_PO;
   bot : JSLB_PO;
   bot_least x : JSLB_PO bot x;
-  join_bot x : join x bot = x;
   join_UB1 x y : JSLB_PO x (join x y);
   join_UB2 x y : JSLB_PO y (join x y);
   join_LUB x y z : JSLB_PO x z → JSLB_PO y z → JSLB_PO (join x y) z;
@@ -42,6 +41,14 @@ Proof.
       * etransitivity; [|apply join_UB1].
         apply join_UB2.
       * apply join_UB2.
+Qed.
+
+Lemma join_bot (c : JSLB) (x : c) : join c x (bot c) = x.
+Proof.
+  apply PO_antisymm.
+  - apply join_LUB; [reflexivity|].
+    apply bot_least.
+  - apply join_UB1.
 Qed.
 
 Record JSLB_morphism (j j' : JSLB) := {
@@ -102,8 +109,8 @@ Program Definition JSLB_forgetful_functor : Functor JSLB_cat PO_cat :=
   {| FO := JSLB_PO;
      FA := @JSLBM_mor; |}.
 
-Program Definition RA_of_JSLB (j : JSLB) : RA :=
-{| RA_car := PO_type j;
+Program Definition RA_of_JSLB (j : JSLB) : PCM :=
+{| PCM_car := PO_type j;
    op := join j;
    unit := bot j;
    valid x := True;
