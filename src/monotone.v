@@ -31,7 +31,7 @@ Implicit Types x y : monotone R.
 
 (* OFE *)
 Instance monotone_dist : Dist (monotone R) :=
-  λ n x y, ∀ a, (∃ b, b ∈ x ∧ R a b) ↔ (∃ b, b ∈ y ∧ R a b).
+  λ n x y, ∀ a, (∀ b, b ∈ x → R b a) ↔ (∀ b, b ∈ y → R b a).
 
 Instance monotone_equiv : Equiv (monotone R) := λ x y, ∀ n, x ≡{n}≡ y.
 
@@ -78,10 +78,7 @@ Instance monotone_op_ne' x : NonExpansive (op x).
 Proof.
   intros n y1 y2; rewrite /dist /monotone_dist /equiv /monotone_equiv.
   rewrite /=; setoid_rewrite elem_of_app => Heq a.
-  specialize (Heq a); destruct Heq as [Heq1 Heq2].
-  split; intros [b [[Hb|Hb] HRb]]; eauto.
-  - destruct Heq1 as [? [? ?]]; eauto.
-  - destruct Heq2 as [? [? ?]]; eauto.
+  specialize (Heq a); destruct Heq as [Heq1 Heq2]; firstorder.
 Qed.
 Instance monotone_op_ne : NonExpansive2 (@op (monotone R) _).
 Proof. by intros n x1 x2 Hx y1 y2 Hy; rewrite Hy !(comm _ _ y2) Hx. Qed.
@@ -124,11 +121,7 @@ Global Instance principal_ne
        `{HRne : !∀ n, Proper ((dist n) ==> (dist n) ==> iff) R} :
   NonExpansive (principal R).
 Proof.
-  rewrite /principal /= => n a1 a2 Ha; split; simpl;
-    setoid_rewrite elem_of_list_singleton; intros [x [Hx HR]]; subst;
-    eexists; (split; first eauto).
-  - symmetry in Ha. eapply HRne; eauto.
-  - eapply HRne; eauto.
+  rewrite /principal /= => n a1 a2 Ha; split; simpl; set_solver.
 Qed.
 
 Global Instance principal_proper
@@ -142,16 +135,14 @@ Proof.
 Qed.
 
 Lemma principal_injN_general n a b :
-  principal R a ≡{n}≡ principal R b → R a a → R a b.
+  principal R a ≡{n}≡ principal R b → R b b → R a b.
 Proof.
   rewrite /principal /dist /monotone_dist => Hab Haa.
-  - destruct (Hab a) as [Ha _]; edestruct Ha as [? [?%elem_of_list_singleton ?]];
-    subst; eauto.
-    eexists _; split; first apply elem_of_list_singleton; eauto.
+  apply Hab; set_solver.
 Qed.
 
 Lemma principal_inj_general a b :
-  principal R a ≡ principal R b → R a a → R a b.
+  principal R a ≡ principal R b → R b b → R a b.
 Proof. intros Hab; apply (principal_injN_general 0); eauto. Qed.
 
 Global Instance principal_injN_general' `{!Reflexive R} n :
@@ -181,10 +172,12 @@ Lemma principal_R_opN_base `{!Transitive R} n x y :
 Proof.
   intros HR.
   rewrite /= /monotone_op /=.
-  intros z; split; setoid_rewrite elem_of_app.
-  - intros [b [[Hb|] ?]]; last by eauto.
-    destruct (HR _ Hb) as [d [Hd1 Hd2]]; eauto.
-  - intros [b [Hb1 Hb2]]; eauto.
+  intros z; split; setoid_rewrite elem_of_app; intros Hz.
+  - intros; apply Hz; auto.
+  - intros b [Hb|Hb].
+    + apply HR in Hb as (c & Hc1 & Hc2).
+      transitivity c; auto.
+    + intros; apply Hz; auto.
 Qed.
 
 Lemma principal_R_opN `{!Transitive R} n a b :
@@ -200,18 +193,13 @@ Lemma principal_R_op `{!Transitive R} a b :
 Proof. by intros ? ?; apply principal_R_opN. Qed.
 
 Lemma principal_op_RN n a b x :
-  R a a → principal R a ⋅ x ≡{n}≡ principal R b → R a b.
+  R b b → principal R a ⋅ x ≡{n}≡ principal R b → R a b.
 Proof.
-  intros Ha HR.
-  rewrite /= /monotone_op /=.
-  destruct (HR a) as [[z [HR1%elem_of_list_singleton HR2]] _];
-    last by subst; eauto.
-  rewrite /op /monotone_op /principal /=.
-  eexists _; split; eauto. rewrite elem_of_cons; eauto.
+  intros Ha HR; apply HR; set_solver.
 Qed.
 
 Lemma principal_op_R a b x :
-  R a a → principal R a ⋅ x ≡ principal R b → R a b.
+  R b b → principal R a ⋅ x ≡ principal R b → R a b.
 Proof. intros ? ?; eapply (principal_op_RN 0); eauto. Qed.
 
 Lemma principal_op_R' `{!Reflexive R} a b x :
@@ -256,14 +244,13 @@ Proof.
   split; first done.
   intros n; specialize (Habz n).
   intros x; split.
-  - intros (y & ->%elem_of_list_singleton & Hy2).
-    by exists na; split; first constructor.
-  - intros (y & [->|Hy1]%elem_of_cons & Hy2).
-    + by exists na; split; first constructor.
-    + exists na; split; first constructor.
-      specialize (Habz x) as [_ [c [->%elem_of_list_singleton Hc2]]].
-      { exists y; split; first (by apply elem_of_app; right); eauto. }
-      etrans; eauto.
+  - intros Hx b [Hb|Hb]%elem_of_app.
+    + by apply Hx.
+    + destruct (Habz x) as [Habz' _].
+      apply Habz'; [|set_solver].
+      intros; transitivity na; [|apply Hx]; set_solver.
+  - intros Hx b Hb.
+    apply Hx; set_solver.
 Qed.
 
 Lemma monotone_local_update_get_frag `{!PreOrder R} a na:

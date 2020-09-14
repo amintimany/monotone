@@ -109,7 +109,7 @@ Program Definition JSLB_forgetful_functor : Functor JSLB_cat PO_cat :=
   {| FO := JSLB_PO;
      FA := @JSLBM_mor; |}.
 
-Program Definition RA_of_JSLB (j : JSLB) : PCM :=
+Program Definition PCM_of_JSLB (j : JSLB) : PCM :=
 {| PCM_car := PO_type j;
    op := join j;
    unit := bot j;

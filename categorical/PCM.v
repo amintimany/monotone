@@ -1,5 +1,6 @@
 From Coq.Unicode Require Import Utf8.
 From Coq.Program Require Import Tactics.
+From Coq.micromega Require Import Lia.
 From Categories.Essentials Require Import Facts_Tactics.
 From Categories Require Import Category.Main Functor.Main.
 From Coq.Classes Require Import RelationClasses.
@@ -90,29 +91,19 @@ Proof.
     rewrite Hv, Hu, op_assoc; trivial.
 Qed.
 
-Local Obligation Tactic := idtac.
+(* example PCM: natural numbers and maximum operation *)
 
-(* Program Definition extension_Fun_mor (r r' : RA) (f : RA_morphism r r') : *)
-(*   PO_morphism (extension_PO r) (extension_PO r') := *)
-(*   {| POM_mor x := f x |}. *)
-(* Next Obligation. *)
-(* Proof. *)
-(*   intros r r' f x y [z ->]; cbn. *)
-(*   rewrite RAM_resp. *)
-(*   exists (f z); trivial. *)
-(* Qed. *)
+Program Definition nat_max_pcm : PCM :=
+{| PCM_car := nat;
+   op := max;
+   unit := 0;
+   valid := λ _, True; |}.
 
-(* Program Definition extension_functor : Functor RA_cat PO_cat := *)
-(*   {| FO := extension_PO; *)
-(*      FA := extension_Fun_mor |}. *)
-(* Next Obligation. *)
-(* Proof. *)
-(*   intros r. *)
-(*   apply POM_morphism_eq; cbn; trivial. *)
-(* Qed. *)
-(* Next Obligation. *)
-(* Proof. *)
-(*   intros r r' r'' f g. *)
-(*   apply POM_morphism_eq; cbn; trivial. *)
-(* Qed. *)
- 
+Next Obligation.
+Proof.
+  lia.
+Qed.
+Next Obligation.
+Proof.
+  lia.
+Qed.
