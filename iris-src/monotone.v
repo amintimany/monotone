@@ -29,9 +29,25 @@ Context {A : ofeT} {R : relation A}.
 Implicit Types a b : A.
 Implicit Types x y : monotone R.
 
+Definition Below (a : A) (x : monotone R) := ∃ b, b ∈ x ∧ R a b.
+
+Lemma Below_app a x y : Below a (x ++ y) ↔ Below a x ∨ Below a y.
+Proof.
+  split.
+  - intros (b & [|]%elem_of_app & ?); [left|right]; exists b; eauto.
+  - intros [(b & Hb1 & Hb2)|(b & Hb1 & Hb2)]; exists b; rewrite elem_of_app; eauto.
+Qed.
+
+Lemma Below_principal a b : Below a (principal R b) ↔ R a b.
+Proof.
+  split.
+  - intros (c & ->%elem_of_list_singleton & ?); done.
+  - intros Hab; exists b; split; first apply elem_of_list_singleton; done.
+Qed.
+
 (* OFE *)
 Instance monotone_dist : Dist (monotone R) :=
-  λ n x y, ∀ a, (∃ b, b ∈ x ∧ R a b) ↔ (∃ b, b ∈ y ∧ R a b).
+  λ n x y, ∀ a, Below a x ↔ Below a y.
 
 Instance monotone_equiv : Equiv (monotone R) := λ x y, ∀ n, x ≡{n}≡ y.
 
@@ -60,13 +76,20 @@ Program Instance monotone_op : Op (monotone R) := λ x y, x ++ y.
 Instance monotone_pcore : PCore (monotone R) := Some.
 
 Instance monotone_comm : Comm (≡) (@op (monotone R) _).
-Proof. intros x y n a; setoid_rewrite elem_of_app; split=> Ha; firstorder. Qed.
+Proof.
+  intros x y n a; rewrite /Below.
+  setoid_rewrite elem_of_app; split=> Ha; firstorder.
+Qed.
 Instance monotone_assoc : Assoc (≡) (@op (monotone R) _).
 Proof.
-  intros x y z n a; simpl; repeat setoid_rewrite elem_of_app; split=> Ha; firstorder.
+  intros x y z n a; rewrite /Below /=.
+  repeat setoid_rewrite elem_of_app; split=> Ha; firstorder.
 Qed.
 Lemma monotone_idemp (x : monotone R) : x ⋅ x ≡ x.
-Proof. intros n a; setoid_rewrite elem_of_app; split=> Ha; firstorder. Qed.
+Proof.
+  intros n a; rewrite /Below.
+  setoid_rewrite elem_of_app; split=> Ha; firstorder.
+Qed.
 
 Instance monotone_validN_ne n :
   Proper (dist n ==> impl) (@validN (monotone R) _ n).
@@ -76,7 +99,7 @@ Proof. move=> x y /equiv_dist H; auto. Qed.
 
 Instance monotone_op_ne' x : NonExpansive (op x).
 Proof.
-  intros n y1 y2; rewrite /dist /monotone_dist /equiv /monotone_equiv.
+  intros n y1 y2; rewrite /dist /monotone_dist /equiv /monotone_equiv /Below.
   rewrite /=; setoid_rewrite elem_of_app => Heq a.
   specialize (Heq a); destruct Heq as [Heq1 Heq2].
   split; intros [b [[Hb|Hb] HRb]]; eauto.
@@ -123,13 +146,7 @@ Canonical Structure monotoneUR := UcmraT (monotone R) auth_ucmra_mixin.
 Global Instance principal_ne
        `{HRne : !∀ n, Proper ((dist n) ==> (dist n) ==> iff) R} :
   NonExpansive (principal R).
-Proof.
-  rewrite /principal /= => n a1 a2 Ha; split; simpl;
-    setoid_rewrite elem_of_list_singleton; intros [x [Hx HR]]; subst;
-    eexists; (split; first eauto).
-  - symmetry in Ha. eapply HRne; eauto.
-  - eapply HRne; eauto.
-Qed.
+Proof. intros n a1 a2 Ha; split; rewrite /= !Below_principal !Ha; done. Qed.
 
 Global Instance principal_proper
        {HRne : ∀ n, Proper ((dist n) ==> (dist n) ==> iff) R} :
@@ -179,20 +196,16 @@ Proof. intros ???. apply equiv_dist=>n. by apply principal_injN, equiv_dist. Qed
 Lemma principal_R_opN_base `{!Transitive R} n x y :
   (∀ b, b ∈ y → ∃ c, c ∈ x ∧ R b c) → y ⋅ x ≡{n}≡ x.
 Proof.
-  intros HR.
-  rewrite /= /monotone_op /=.
-  intros z; split; setoid_rewrite elem_of_app.
-  - intros [b [[Hb|] ?]]; last by eauto.
-    destruct (HR _ Hb) as [d [Hd1 Hd2]]; eauto.
-  - intros [b [Hb1 Hb2]]; eauto.
+  intros HR; split; rewrite /op /monotone_op Below_app; [|by firstorder].
+  intros [(c & (d & Hd1 & Hd2)%HR & Hc2)|]; [|done].
+  exists d; split; [|transitivity c]; done.
 Qed.
 
 Lemma principal_R_opN `{!Transitive R} n a b :
   R a b → principal R a ⋅ principal R b ≡{n}≡ principal R b.
 Proof.
-  intros. apply principal_R_opN_base.
-  intros c; rewrite /principal elem_of_list_singleton => ->.
-  eexists; split; rewrite ?elem_of_list_singleton; eauto.
+  intros; apply principal_R_opN_base; intros c; rewrite /principal.
+  setoid_rewrite elem_of_list_singleton => ->; eauto.
 Qed.
 
 Lemma principal_R_op `{!Transitive R} a b :
@@ -203,11 +216,9 @@ Lemma principal_op_RN n a b x :
   R a a → principal R a ⋅ x ≡{n}≡ principal R b → R a b.
 Proof.
   intros Ha HR.
-  rewrite /= /monotone_op /=.
   destruct (HR a) as [[z [HR1%elem_of_list_singleton HR2]] _];
     last by subst; eauto.
-  rewrite /op /monotone_op /principal /=.
-  eexists _; split; eauto. rewrite elem_of_cons; eauto.
+  rewrite /op /monotone_op /principal Below_app Below_principal; auto.
 Qed.
 
 Lemma principal_op_R a b x :
@@ -250,7 +261,7 @@ Lemma monotone_local_update_grow `{!Transitive R} a q na:
   R a na →
   (principal R a, q) ~l~> (principal R na, principal R na).
 Proof.
-  intros Hana.
+  intros Hana Hanb.
   apply local_update_unital_discrete.
   intros z _ Habz.
   split; first done.
