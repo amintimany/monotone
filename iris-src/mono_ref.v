@@ -100,19 +100,18 @@ Section MonRef.
 
   Lemma MonRefDealloc l γ v :
     MonRefMapsto l γ v -∗
-     ∃ a, ⌜to_A v = Some a⌝ ∗ l ↦ v ∗
-       ∃ P, P ∗ (P -∗ ∀ w b, ⌜to_A w = Some b ∧ R a b⌝ -∗
-                       l ↦ w ==∗ MonRefMapsto l γ w).
+    l ↦ v ∗
+    ∀ w, ⌜option_Forall2 R (to_A v) (to_A w)⌝ -∗ l ↦ w ==∗ MonRefMapsto l γ w.
   Proof.
     rewrite MonRefMapsto_eq /MonRefMapsto_def.
     iIntros "(HE & Hl)".
-    iDestruct "HE" as (a) "[% HE]".
-    iExists _; iSplit; first by eauto.
-    iFrame.
-    iExists (Exact γ v)%I; iFrame.
-    iSplitL.
+    iDestruct "HE" as (a) "[Ha HE]".
+    iDestruct "Ha" as %Ha.
+    iAssert (Exact γ v) with "[HE]" as "HE".
     { iExists _; iFrame; eauto. }
-    iIntros "HE". iIntros (w c [Hc Hac]) "Hl".
+    iFrame.
+    iIntros (w Hw) "Hl".
+    inversion Hw as [c d Hcd Hc Hd|Hc Hd]; symmetry in Hc, Hd; simplify_eq; [].
     iMod (MonRef_update _ _ w with "HE") as "[HE HA]"; eauto.
     rewrite MonRefMapsto_eq /MonRefMapsto_def; iFrame; auto.
   Qed.
