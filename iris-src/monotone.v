@@ -291,6 +291,20 @@ Proof.
   by apply principal_included.
 Qed.
 
+Lemma monotone_update `{!PreOrder R} a b c:
+  R a b →
+  R c b →
+  ● principal R a ~~> ● principal R b ⋅ ◯ principal R c.
+Proof.
+  intros Hab Hcb.
+  etrans.
+  { apply auth_update_alloc; apply (monotone_local_update_grow _ _ b); done. }
+  etrans; first apply cmra_update_op_l.
+  apply auth_update_alloc.
+  apply monotone_local_update_get_frag; done.
+Qed.
+
+
 End monotone.
 
 Arguments monotoneC {_} _.
