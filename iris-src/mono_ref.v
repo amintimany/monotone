@@ -57,7 +57,7 @@ Section MonRef.
   Proof. rewrite atleast_eq /atleast_def; apply _. Qed.
 
   Definition MonRefMapsto_def l γ v :=
-    (Exact γ v ∗ atleast γ v ∗ l ↦ v)%I.
+    (Exact γ v ∗ l ↦ v)%I.
   Definition MonRefMapsto_aux l γ v : seal (MonRefMapsto_def l γ v).
   Proof. by eexists. Qed.
   Definition MonRefMapsto l γ v : iProp Σ := (MonRefMapsto_aux l γ v).(unseal).
@@ -105,13 +105,16 @@ Section MonRef.
                        l ↦ w ==∗ MonRefMapsto l γ w).
   Proof.
     rewrite MonRefMapsto_eq /MonRefMapsto_def.
-    iIntros "(HE & Ha & Hl)".
-    iDestruct (MonRef_related with "HE Ha") as %(a & b & Ha & Hb & Hab).
-    iExists _; iSplit; eauto; iFrame.
-    iExists (Exact γ v ∗ atleast γ v)%I; iFrame.
-    iIntros "[HE Ha]". iIntros (w c [Hc Hac]) "Hl".
-    rewrite MonRefMapsto_eq /MonRefMapsto_def; iFrame.
-    iMod (MonRef_update _ _ w with "HE") as "[$ $]"; eauto.
+    iIntros "(HE & Hl)".
+    iDestruct "HE" as (a) "[% HE]".
+    iExists _; iSplit; first by eauto.
+    iFrame.
+    iExists (Exact γ v)%I; iFrame.
+    iSplitL.
+    { iExists _; iFrame; eauto. }
+    iIntros "HE". iIntros (w c [Hc Hac]) "Hl".
+    iMod (MonRef_update _ _ w with "HE") as "[HE HA]"; eauto.
+    rewrite MonRefMapsto_eq /MonRefMapsto_def; iFrame; auto.
   Qed.
 
   Lemma wp_Create_MonRef E (v : val heap_lang) :
@@ -145,20 +148,23 @@ Section MonRef.
     {{{RET #(); MonRefMapsto l γ w }}}.
   Proof.
     rewrite MonRefMapsto_eq /MonRefMapsto_def.
-    iIntros (Hv Hw HR F) "H HF".
-    iDestruct "H" as "(HE & Hal & Hl)".
+    iIntros (Hv Hw HR Φ) "H HΦ".
+    iDestruct "H" as "[HE Hl]".
     iApply wp_fupd.
     wp_store.
-    iDestruct "Hl" as "[Hl Hl']".
     iMod (MonRef_update with "HE") as "[HE HFr']"; eauto.
-    iModIntro. iApply "HF".
+    iModIntro. iApply "HΦ".
     rewrite MonRefMapsto_eq /MonRefMapsto_def; iFrame.
   Qed.
 
-  Lemma snap_shot l γ v : MonRefMapsto l γ v ==∗ atleast γ v.
+  Lemma snap_shot l γ v : MonRefMapsto l γ v ==∗ MonRefMapsto l γ v ∗ atleast γ v.
   Proof.
-    rewrite MonRefMapsto_eq /MonRefMapsto_def atleast_eq /atleast_def.
-    iIntros "(HE & Hal & Hl)"; eauto.
+    rewrite MonRefMapsto_eq /MonRefMapsto_def.
+    iIntros "[HE Hl]"; eauto.
+    iDestruct "HE" as (a) "[% HE]".
+    iMod (MonRef_update _ v v with "[HE]") as "[HE HFr']";
+      [eauto|eauto|reflexivity| |by iFrame].
+    iExists _; iFrame; done.
   Qed.
 
   Lemma recall l γ v w :
