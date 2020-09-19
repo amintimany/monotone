@@ -1,9 +1,14 @@
-From iris.algebra Require Import auth excl.
+From iris.algebra Require Import auth.
 From iris.heap_lang Require Import notation proofmode.
 From iris.proofmode Require Import tactics.
 From iris.heap_lang.lib Require Import par.
 From iris_monotone Require Import monotone.
 From stdpp Require Import relations.
+
+Definition prog : expr :=
+  let: "x" := ref #0 in
+  let: "y" := ref #0 in
+  ("x" <- #1;; !"y") ||| ("y" <- #1;; !"x").
 
 Inductive ST : Set :=
 | ST_zero_zero
@@ -67,11 +72,6 @@ Proof.
   intros [?|[z [Hz1 Hz2]]]%rtc_inv; first by auto.
   inversion Hz1; subst.
 Qed.
-
-Definition prog : expr :=
-  let: "x" := ref #0 in
-  let: "y" := ref #0 in
-  ("x" <- #1;; !"y") ||| ("y" <- #1;; !"x").
 
 Section verification.
   Context `{!heapG Σ, spawnG Σ, !inG Σ (authUR (monotoneUR ST_rel)),
