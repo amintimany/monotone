@@ -1,5 +1,4 @@
-From iris.algebra Require Import auth frac gmap agree.
-From iris.base_logic Require Import invariants.
+From iris.algebra Require Import auth.
 From iris.heap_lang Require Import proofmode notation tactics.
 From iris.program_logic Require Import weakestpre.
 From iris_monotone Require Import monotone.
