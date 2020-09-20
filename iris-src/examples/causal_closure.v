@@ -1,4 +1,4 @@
-From iris.algebra Require Import auth excl gset.
+From iris.algebra Require Import auth gset.
 From iris.base_logic Require Import invariants.
 From iris.heap_lang Require Import notation proofmode.
 From iris.proofmode Require Import tactics.
