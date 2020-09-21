@@ -3,7 +3,7 @@ From Coq.Program Require Import Tactics.
 From Categories.Essentials Require Import Facts_Tactics.
 From Categories Require Import Category.Main Functor.Main.
 From Coq.Classes Require Import RelationClasses.
-From cat_monotone Require Import PartialOrder.
+From cat_monotone Require Import PartialOrder PreOrder.
 
 (** For us, an RA is basically a partial commutative monoid. *)
 Record PCM := {
@@ -81,7 +81,7 @@ Qed.
 
 Definition extension (r : PCM) (x y : r) : Prop := ∃ z, y = op r x z.
 
-Program Definition extension_PreOrder (r : PCM) : PreOrder (extension r).
+Instance extension_PreOrder (r : PCM) : PreOrder (extension r).
 Proof.
   split.
   - intros x; exists (unit r); rewrite op_comm, unit_id; trivial.
@@ -90,29 +90,31 @@ Proof.
     rewrite Hv, Hu, op_assoc; trivial.
 Qed.
 
+Program Definition extension_pro (r : PCM) : PreOrd :=
+  {| PRO_type := r; PRO_car := extension r |}.
+
 Local Obligation Tactic := idtac.
 
-(* Program Definition extension_Fun_mor (r r' : RA) (f : RA_morphism r r') : *)
-(*   PO_morphism (extension_PO r) (extension_PO r') := *)
-(*   {| POM_mor x := f x |}. *)
-(* Next Obligation. *)
-(* Proof. *)
-(*   intros r r' f x y [z ->]; cbn. *)
-(*   rewrite RAM_resp. *)
-(*   exists (f z); trivial. *)
-(* Qed. *)
+Program Definition extension_Fun_mor (r r' : PCM) (f : PCM_morphism r r') :
+  PRO_morphism (extension_pro r) (extension_pro r') :=
+  {| PROM_mor x := f x |}.
+Next Obligation.
+Proof.
+  intros r r' f x y [z ->]; cbn.
+  rewrite PCMM_resp.
+  exists (f z); trivial.
+Qed.
 
-(* Program Definition extension_functor : Functor RA_cat PO_cat := *)
-(*   {| FO := extension_PO; *)
-(*      FA := extension_Fun_mor |}. *)
-(* Next Obligation. *)
-(* Proof. *)
-(*   intros r. *)
-(*   apply POM_morphism_eq; cbn; trivial. *)
-(* Qed. *)
-(* Next Obligation. *)
-(* Proof. *)
-(*   intros r r' r'' f g. *)
-(*   apply POM_morphism_eq; cbn; trivial. *)
-(* Qed. *)
- 
+Program Definition extension_functor : Functor PCM_cat PreOrd_cat :=
+  {| FO := extension_pro;
+     FA := extension_Fun_mor |}.
+Next Obligation.
+Proof.
+  intros r.
+  apply PROM_morphism_eq; cbn; trivial.
+Qed.
+Next Obligation.
+Proof.
+  intros r r' r'' f g.
+  apply PROM_morphism_eq; cbn; trivial.
+Qed.
