@@ -4,10 +4,7 @@ From iris.program_logic Require Import weakestpre.
 From iris.heap_lang Require Import proofmode notation tactics.
 
 Definition mk_counter : val := λ: <>, ref #0.
-Definition counter_incr : val :=
-  rec: "f" "c" :=
-    let: "r" := !"c" in
-    if: CAS "c" "r" ("r" + #1) then #() else "f" "c".
+Definition counter_incr : val := λ: "c", FAA "c" #1;; #().
 Definition counter_read : val := λ: "c", !"c".
 
 Section mono_counter.
@@ -55,34 +52,19 @@ Section mono_counter.
   Proof.
     iIntros (Φ) "#Hinv HΦ".
     unfold counter_incr.
-    iLöb as "IH".
     wp_pures.
-    wp_bind (! _)%E.
+    wp_bind (FAA _ _).
     iInv inv_name as (n) "[Hc Hfl]".
-    wp_load.
+    wp_faa.
+    iMod (own_update with "Hfl") as "[Hfl _]".
+    { apply auth_update_alloc.
+      apply (max_nat_local_update _ _ (MaxNat (n + 1))); simpl; lia. }
+    replace (n + 1)%Z with (n + 1 : Z) by lia.
     iModIntro.
     iSplitL "Hc Hfl".
     { iNext; iExists _; iFrame. }
     wp_pures.
-    wp_bind (CmpXchg _ _ _).
-    iInv inv_name as (m) "[Hc Hfl]".
-    destruct (decide (n = m)) as [->|].
-    - wp_cmpxchg_suc.
-      iMod (own_update with "Hfl") as "[Hfl _]".
-      { apply auth_update_alloc.
-        apply (max_nat_local_update _ _ (MaxNat (m + 1))); simpl; lia. }
-      replace (m + 1)%Z with (m + 1 : Z) by lia.
-      iModIntro.
-      iSplitL "Hc Hfl".
-      { iNext; iExists _; iFrame. }
-      wp_pures.
-      iApply "HΦ"; done.
-    - wp_cmpxchg_fail; first naive_solver.
-      iModIntro.
-      iSplitL "Hc Hfl".
-      { iNext; iExists _; iFrame. }
-      do 2 wp_pure _.
-      iApply "IH"; done.
+    iApply "HΦ"; done.
   Qed.
 
   Lemma wp_counter_read c γ n :
