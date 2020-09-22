@@ -54,4 +54,4 @@ This formalization serves as a simple example of how one reasons about monotonic
 
 ### compile instructions
 
-Use `make` in `iris-src` to compile the development. Dependencies for this development are exactly the same as the ones for the `iris-src` folder.
+Use `make` in `monotone_counter` to compile the development. Dependencies for this development are exactly the same as the ones for the `iris-src` folder.
