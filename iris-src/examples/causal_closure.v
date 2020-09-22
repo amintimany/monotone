@@ -273,11 +273,22 @@ Section verification.
   Definition observed_frag (γ : gname) (f : STO) :=
     own γ (◯ principal causally_closed_subset f).
 
+  Definition db_contents (db : loc) (l : list Event) : iProp Σ :=
+    ∃ w q, db ↦{q} w ∗ ⌜is_list l w⌝.
+
+  Lemma db_contents_duplicable db l :
+    db_contents db l ⊢ db_contents db l ∗ db_contents db l.
+  Proof.
+    unfold db_contents.
+    iDestruct 1 as (w q) "[[Hdb1 Hdb2] #Hl]".
+    iSplitL "Hdb1"; iExists _; iFrame "#"; iExists _; iFrame.
+  Qed.
+
   Definition inv_name : namespace := nroot .@ "inv".
 
   Definition observe_inv (γ : gname) (dbp : loc) : iProp Σ :=
-    ∃ (db : loc) l w,
-      dbp ↦ #db ∗ (∃ q, db ↦{q} w) ∗ ⌜is_list l w⌝ ∗
+    ∃ (db : loc) l,
+      dbp ↦ #db ∗ db_contents db l ∗
       ⌜∀ a, a ∈ l → a = event0 ∨ a = event1⌝ ∗
       observed_full γ (observed l).
 
@@ -287,14 +298,16 @@ Section verification.
     inv inv_name (observe_inv γ dbp) -∗ observed_frag γ f ={E}=∗ ⌜event0 ∈ f⌝.
   Proof.
     iIntros (? He1) "#Hinv #Hf".
-    iInv inv_name as (db l w) "(Hdbp & Hdb & >% & >Hl & >Hfl)".
+    iInv inv_name as (db l) "(Hdbp & >Hdb & >Hl & >Hfl)".
     iDestruct "Hl" as %Hl.
+    iDestruct (db_contents_duplicable with "Hdb") as "[Hdb Hdb']".
+    iDestruct "Hdb'" as (w q) "[Hdbpt _]".
     iDestruct (own_valid_2 with "Hfl Hf")
       as %[Hf _]%auth_both_valid.
     revert Hf; rewrite principal_included; intros Hf.
     iModIntro.
     iSplitL.
-    { iNext; iExists _, _, _; iFrame; auto. }
+    { iNext; iExists _, _; iFrame; auto. }
     iModIntro.
     iPureIntro.
     destruct Hf as [Hf1 Hf2].
@@ -316,15 +329,14 @@ Section verification.
     iLöb as "IH".
     wp_pures.
     wp_bind (! _)%E.
-    iInv inv_name as (db l w) "(Hdbp & Hdb & >% & >Hl & Hfl)".
+    iInv inv_name as (db l) "(Hdbp & Hdb & >Hl & Hfl)".
     iDestruct "Hl" as %Hl.
     wp_load.
-    iDestruct "Hdb" as (q) "[Hdb Hdb']".
+    iDestruct (db_contents_duplicable with "Hdb") as "[Hdb Hdb']".
+    iDestruct "Hdb'" as (w q) "[Hdbpt %]".
     iModIntro.
-    iSplitL "Hdbp Hdb' Hfl".
-    { iNext; iExists _, _, _; iFrame "Hdbp".
-      iSplitL "Hdb'"; first by iExists _; iFrame; eauto.
-      eauto. }
+    iSplitL "Hdbp Hdb Hfl".
+    { iNext; iExists _, _; iFrame; done. }
     wp_pures.
     wp_load.
     wp_apply wp_list_add; first done.
@@ -332,11 +344,11 @@ Section verification.
     wp_alloc newdb as "Hnewdb".
     wp_pures.
     wp_bind (CmpXchg _ _ _).
-    iInv inv_name as (db' l' w') "(Hdbp & Hdb' & >% & >% & Hfl)".
+    iInv inv_name as (db' l') "(Hdbp & Hdb' & >% & Hfl)".
     destruct (decide (db = db')) as [->|].
     - wp_cmpxchg_suc.
-      iDestruct "Hdb'" as (q') "Hdb'".
-      iDestruct (mapsto_agree with "Hdb Hdb'") as %->.
+      iDestruct "Hdb'" as (w' q') "[Hdbpt' %]".
+      iDestruct (mapsto_agree with "Hdbpt Hdbpt'") as %->.
       erewrite (is_list_inj l' l); [|done|done].
       iMod (own_update with "Hfl") as "[Hfl _]".
       { apply auth_update_alloc.
@@ -345,9 +357,8 @@ Section verification.
         intros ? [->| ->]%Hl; destruct He; simplify_eq/=; done. }
       iModIntro.
       iSplitL "Hdbp Hnewdb Hfl".
-      { iNext. iExists _, _, _; iFrame.
-        iSplitL; first by iExists _; eauto.
-        iSplit; first by iPureIntro; eexists.
+      { iNext. iExists _, _; iFrame.
+        iSplitL; first by iExists _, _; iFrame; simpl; eauto.
         iPureIntro.
         intros ? [->|]%elem_of_cons; auto. }
       wp_pures.
@@ -355,7 +366,7 @@ Section verification.
     - wp_cmpxchg_fail.
       iModIntro.
       iSplitL "Hdbp Hdb' Hfl".
-      { iNext; iExists _, _, _; iFrame; eauto. }
+      { iNext; iExists _, _; iFrame; eauto. }
       do 2 wp_pure _.
       iApply "IH"; done.
   Qed.
@@ -370,10 +381,11 @@ Section verification.
     iIntros (Φ) "#[Hinv Hf] HΦ".
     wp_pures.
     wp_bind (! _)%E.
-    iInv inv_name as (db l w) "(Hdbp & Hdb & >% & >Hl & Hfl)".
+    iInv inv_name as (db l) "(Hdbp & Hdb & >Hl & Hfl)".
     iDestruct "Hl" as %Hl.
     wp_load.
-    iDestruct "Hdb" as (q) "[Hdb Hdb']".
+    iDestruct (db_contents_duplicable with "Hdb") as "[Hdb Hdb']".
+    iDestruct "Hdb'" as (w q) "[Hdbpt %]".
     iDestruct (own_valid_2 with "Hfl Hf")
       as %[Hf _]%auth_both_valid.
     revert Hf; rewrite principal_included; intros Hf.
@@ -382,13 +394,11 @@ Section verification.
       apply monotone_local_update_grow; reflexivity. }
     iDestruct "Hfrg" as "#Hfrg".
     iModIntro.
-    iSplitL "Hdbp Hdb' Hfl".
-    { iNext; iExists _, _, _; iFrame "Hdbp".
-      iSplitL "Hdb'"; first by iExists _; iFrame; eauto.
-      eauto. }
+    iSplitL "Hdbp Hdb Hfl".
+    { iNext; iExists _, _; iFrame; done. }
     wp_pures.
     wp_load.
-    iClear "Hdb".
+    iClear "Hdbpt".
     do 5 wp_pure _.
     change 0%Z with (0 : Z); simpl.
     assert (0%nat ≤ e.1) as He1 by lia.
@@ -477,9 +487,8 @@ Section verification.
     iMod (inv_alloc inv_name _ (observe_inv γ dbp) with "[Hdb Hdbp Hfl]")
       as "#Hinv".
     { iNext.
-      iExists _, [], _; iFrame.
-      iSplitL "Hdb"; first by iExists _; iFrame.
-      iSplit; first done.
+      iExists _, []; iFrame.
+      iSplitL; first by iExists _, _; iFrame.
       iPureIntro; set_solver. }
     wp_apply wp_fork.
     { iApply wp_simulate_receive; eauto. }
