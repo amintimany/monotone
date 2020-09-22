@@ -7,17 +7,6 @@ Local Arguments pcore _ _ !_ /.
 Local Arguments ofe_dist !_ /.
 Local Arguments ofe_equiv ! _ /.
 
-(**
-
-The idea is as follows: given a preorder relation R ⊆ A × A, we
-construct a monoid (resource algebra) such that the extension order of
-the monoid corresponds to the relation R. We do this by taking the
-monoid to be the free join-semi-lattice completion of the relation
-R. The monoid operation then is just join. The representative of an
-element a ∈ A, is written as principal R a.
-
-*)
-
 Definition monotone {A : Type} (R : relation A) : Type := list A.
 
 Definition principal {A : Type} (R : relation A) (a : A) :
