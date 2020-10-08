@@ -46,7 +46,7 @@ Section MonRef.
     iIntros "HF Hf".
     iDestruct "HF" as (a ->) "HF".
     iDestruct "Hf" as (b ->) "Hf".
-    iDestruct (own_valid_2 with "HF Hf") as %[Hvl _]%auth_both_valid;
+    iDestruct (own_valid_2 with "HF Hf") as %[Hvl _]%auth_both_valid_discrete;
       simpl in *.
     iPureIntro; simpl.
     apply (principal_included b a) in Hvl; eauto.

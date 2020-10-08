@@ -303,7 +303,7 @@ Section verification.
     iDestruct (db_contents_duplicable with "Hdb") as "[Hdb Hdb']".
     iDestruct "Hdb'" as (w q) "[Hdbpt _]".
     iDestruct (own_valid_2 with "Hfl Hf")
-      as %[Hf _]%auth_both_valid.
+      as %[Hf _]%auth_both_valid_discrete.
     revert Hf; rewrite principal_included; intros Hf.
     iModIntro.
     iSplitL.
@@ -387,7 +387,7 @@ Section verification.
     iDestruct (db_contents_duplicable with "Hdb") as "[Hdb Hdb']".
     iDestruct "Hdb'" as (w q) "[Hdbpt %]".
     iDestruct (own_valid_2 with "Hfl Hf")
-      as %[Hf _]%auth_both_valid.
+      as %[Hf _]%auth_both_valid_discrete.
     revert Hf; rewrite principal_included; intros Hf.
     iMod (own_update with "Hfl") as "[Hfl Hfrg]".
     { apply auth_update_alloc.
@@ -483,7 +483,7 @@ Section verification.
     wp_pures.
     iMod (own_alloc (● principal causally_closed_subset ∅ ⋅
                      ◯ principal causally_closed_subset ∅)) as (γ) "[Hfl #Hfr]".
-    { apply auth_both_valid; done. }
+    { apply auth_both_valid_discrete; done. }
     iMod (inv_alloc inv_name _ (observe_inv γ dbp) with "[Hdb Hdbp Hfl]")
       as "#Hinv".
     { iNext.

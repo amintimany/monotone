@@ -24,8 +24,8 @@ The sub-folder `iris-src/examples` includes three examples of using the monotone
 
 Use `make` in `iris-src` to compile the development. This development has the following dependencies:
 1. Coq 8.12
-2. The std++ project (Iris depends on this): commit hash: 63d07bb8e388bff552dc4985c4f363ccd5242269
-3. The Iris program logic: commit hash: b2b558ac9e8b7d43e9e6e21a61dda3a19c1b62b2
+2. The std++ project (Iris depends on this): commit hash: 7ae771423354205197d9a1181b27ebf0b16d8b94
+3. The Iris program logic: commit hash: a36f8a236716a2d19ff8065c2fc4938021e5f92d
 
 
 ## `categorical`
