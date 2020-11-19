@@ -2,30 +2,20 @@ The Monotone construction
 ---------------------------
 
 This project formalizes the monotone construction for reasoning about monotonicity with respect to arbitrary preorder relations in separation logic.
-There are three folders in this project: `iris-src`, `categorical`, and `monotone_counter`.
+There are three folders in this project: `iris-src`, `categorical`, and `examples`.
 
 
 ## `iris-src`
 
 This folder includes the formalization of the monotone construction as an Iris resource algebra.
 This resource algebra is defined in the file `iris-src/monotone.v`
-The sub-folder `iris-src/examples` includes three examples of using the monotone resource algebra:
-
-- `iris-src/examples/mon_ref.v` constructs monotone references that are associated with a preorder relation.
-   A monotone reference can only be updated if they respect the associated preorder relation.
-   Any Iris points-to proposition can be turned into a monotone reference and back into a an ordinary points-to proposition (possibly multiple times).
-
-- `iris-src/examples/exclude_path.v` shows how the monotone resource algebra instantiated with a very simple preorder can be used to prove that certain paths in the program execution are unreachable.
-
-- `iris-src/examples/causal-closure.v` is an example inspired by verification of causally consistent databases.
-   It shows how the monotone resource algebra can be used to enforce a relation between ghost resources that allows us to prove that if an event is observed then any other event that it depends on is also observed.
 
 ### compile instructions
 
 Use `make` in `iris-src` to compile the development. This development has the following dependencies:
 1. Coq 8.12
-2. The std++ project (Iris depends on this): commit hash: 7ae771423354205197d9a1181b27ebf0b16d8b94
-3. The Iris program logic: commit hash: a36f8a236716a2d19ff8065c2fc4938021e5f92d
+2. The std++ project (Iris depends on this): commit hash: 6385b54757de0dc0194d691e668395e09d6e5868
+3. The Iris program logic: commit hash: ec3a2a2a0d70394da7e79e454ccd8c2fc344c935
 
 
 ## `categorical`
@@ -47,11 +37,23 @@ Use `make` in `categorical` to compile the development. This development has the
 1. Coq 8.12
 2. The category theory library: https://github.com/amintimany/Categories commit hash: 96ce5ad61a1078d8c8ac73befa33c147650caf4d
 
-## `monotone-counter`
 
-This folder verifies correctness of a monotone counter with basic iris resource algebras, i.e., without the monotone resource algebra.
-This formalization serves as a simple example of how one reasons about monotonicity in separation logic.
+## `examples`
+
+The sub-folder `examples` includes three examples of using the monotone resource algebra and one simple example of how one reasons about monotonicity in separation logic using basic iris resource algebras.
+
+- `examples/mon_ref.v` constructs monotone references that are associated with a preorder relation.
+   A monotone reference can only be updated if they respect the associated preorder relation.
+   Any Iris points-to proposition can be turned into a monotone reference and back into a an ordinary points-to proposition (possibly multiple times).
+
+- `examples/exclude_path.v` shows how the monotone resource algebra instantiated with a very simple preorder can be used to prove that certain paths in the program execution are unreachable.
+
+- `examples/causal-closure.v` is an example inspired by verification of causally consistent databases.
+   It shows how the monotone resource algebra can be used to enforce a relation between ghost resources that allows us to prove that if an event is observed then any other event that it depends on is also observed.
+   
+- `examples/mono_counter.v` verifies correctness of a monotone counter with basic iris resource algebras, i.e., without the monotone resource algebra.
+  This formalization serves as a simple example of how one reasons about monotonicity in separation logic.
 
 ### compile instructions
 
-Use `make` in `monotone_counter` to compile the development. Dependencies for this development are exactly the same as the ones for the `iris-src` folder.
+Use `make` in `examples` to compile the development. This development has the same dependencies as the `iris-src` folder. 
