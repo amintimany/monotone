@@ -1,6 +1,10 @@
 -Q . monotone_counter
+-Q ../iris-src iris_monotone
 
 -arg -w -arg -convert_concl_no_check
 -arg -w -arg -redundant-canonical-projection
 
 mono_counter.v
+mono_ref.v
+exclude_path.v
+causal_closure.v

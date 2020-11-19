@@ -4,6 +4,3 @@
 -arg -w -arg -redundant-canonical-projection
 
 monotone.v
-examples/mono_ref.v
-examples/exclude_path.v
-examples/causal_closure.v

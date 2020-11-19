@@ -39,7 +39,7 @@ Section mono_counter.
     wp_alloc c as "Hc".
     iMod (own_alloc (● (MaxNat 0) ⋅ ◯ (MaxNat 0))) as (γ) "[Hfl Hfr]".
     { apply auth_both_valid; split; last done.
-      apply max_nat_included; done. }
+      intros ?; apply max_nat_included; done. }
     iMod (inv_alloc inv_name _ (∃ n : nat, c ↦ #n ∗ counter_exact γ n)
             with "[Hc Hfl]").
     { iNext; iExists _; iFrame. }
