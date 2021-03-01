@@ -8,7 +8,7 @@ From iris_monotone Require Import monotone.
     monotone refrences. *)
 
 Section Resources.
-  Context {A : ofeT} {R : relation A}.
+  Context {A : ofe} {R : relation A}.
 
   Class MonRefG Σ := monrefG {
     MonRefIG_monauth :> inG Σ (authUR (monotoneUR R));
@@ -24,7 +24,7 @@ End Resources.
 Global Arguments MonRefG {_} _ _.
 
 Section MonRef.
-  Context {A : ofeT} (R : relation A) `{!ProperPreOrder R}.
+  Context {A : ofe} (R : relation A) `{!ProperPreOrder R}.
   Context (to_A : val heap_lang → option A).
   Context `{!MonRefG R Σ, !heapG Σ}.
 
@@ -136,7 +136,7 @@ Section MonRef.
     iIntros (F) "H HF".
     iDestruct "H" as "(HE & Hal & Hl)".
     wp_load.
-    iApply "HF"; iFrame "#"; iFrame.
+    iApply "HF"; iFrame "#"; iFrame; done.
   Qed.
 
   Lemma wp_Write_MonRef E l γ (v w : val heap_lang) a b :

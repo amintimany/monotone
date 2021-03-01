@@ -140,6 +140,7 @@ Section verification.
     { simplify_eq/=. wp_pures.
       iApply "HΦ".
       iLeft.
+      iModIntro. 
       iSplit; first done.
       iIntros (?); iPureIntro; set_solver. }
     destruct Hl as (u& ->&Hl).
@@ -150,6 +151,7 @@ Section verification.
     - wp_pures.
       iApply "HΦ".
       iRight.
+      iModIntro.
       iExists a; iSplit; last done.
       iPureIntro; set_solver.
     - do 2 wp_pure _.
@@ -274,7 +276,7 @@ Section verification.
     own γ (◯ principal causally_closed_subset f).
 
   Definition db_contents (db : loc) (l : list Event) : iProp Σ :=
-    ∃ w q, db ↦{q} w ∗ ⌜is_list l w⌝.
+    ∃ w q, db ↦{#q} w ∗ ⌜is_list l w⌝.
 
   Lemma db_contents_duplicable db l :
     db_contents db l ⊢ db_contents db l ∗ db_contents db l.
@@ -418,6 +420,7 @@ Section verification.
     iIntros (v) "[[-> Hv]|Hv]".
     - wp_pures.
       iApply ("HΦ" $! _ (observed l)); iFrame "#".
+      iModIntro. 
       iSplit; first by iPureIntro; apply Hf.
       iIntros (He).
       destruct (before_in_observed l e i) as (e' & He'1 & He'2); [done|done|].
@@ -431,6 +434,7 @@ Section verification.
           last naive_solver.
         wp_pures.
         iApply ("HΦ" $! _ (observed l)); iFrame "#".
+        iModIntro. 
         iSplit; first by iPureIntro; apply Hf.
         iDestruct "He'1" as %[He'1 He'2%bool_decide_eq_true_1].
         destruct (decide (e.2 = e'.2)) as [Heq'|Hneq'].
@@ -492,6 +496,7 @@ Section verification.
       iPureIntro; set_solver. }
     wp_apply wp_fork.
     { iApply wp_simulate_receive; eauto. }
+    wp_pures. 
     wp_apply wp_fork.
     { iApply wp_simulate_receive; eauto. }
     wp_pures.

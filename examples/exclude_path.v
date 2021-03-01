@@ -124,11 +124,11 @@ Section verification.
   Definition inv_name : namespace := nroot.@"inv".
 
   Definition prog_inv γ lx ly : iProp Σ :=
-    ∃ s, exact_ST γ s ∗ lx ↦{1/2} (ST_val s).1 ∗ ly ↦{1/2} (ST_val s).2.
+    ∃ s, exact_ST γ s ∗ lx ↦{#1/2} (ST_val s).1 ∗ ly ↦{#1/2} (ST_val s).2.
 
   Lemma prog_inv_update_lx_to_one γ lx ly :
-    prog_inv γ lx ly -∗ lx ↦{1/2} #0 -∗
-      lx ↦ #0 ∗ (lx ↦{1/2} #1 ==∗
+    prog_inv γ lx ly -∗ lx ↦{#1/2} #0 -∗
+      lx ↦ #0 ∗ (lx ↦{#1/2} #1 ==∗
       prog_inv γ lx ly ∗
       (observed_ST γ ST_one_zero ∨
        observed_ST γ ST_zero_one_then_one_one)).
@@ -156,8 +156,8 @@ Section verification.
   Qed.
 
   Lemma prog_inv_update_ly_to_one γ lx ly :
-    prog_inv γ lx ly -∗ ly ↦{1/2} #0 -∗
-      ly ↦ #0 ∗ (ly ↦{1/2} #1 ==∗
+    prog_inv γ lx ly -∗ ly ↦{#1/2} #0 -∗
+      ly ↦ #0 ∗ (ly ↦{#1/2} #1 ==∗
       prog_inv γ lx ly ∗
       (observed_ST γ ST_zero_one ∨
        observed_ST γ ST_one_zero_then_one_one)).
@@ -197,7 +197,7 @@ Section verification.
   Lemma prog_inv_read_lx γ lx ly :
     prog_inv γ lx ly -∗
       observed_ST γ ST_zero_one ∨ observed_ST γ ST_one_zero_then_one_one -∗
-      ∃ s, lx ↦{1/2} (ST_val s).1 ∗ (lx ↦{1/2} (ST_val s).1 ==∗
+      ∃ s, lx ↦{#1/2} (ST_val s).1 ∗ (lx ↦{#1/2} (ST_val s).1 ==∗
              prog_inv γ lx ly ∗ right_post γ (ST_val s).1).
   Proof.
     unfold right_post.
@@ -231,7 +231,7 @@ Section verification.
   Lemma prog_inv_read_ly γ lx ly :
     prog_inv γ lx ly -∗
       observed_ST γ ST_one_zero ∨ observed_ST γ ST_zero_one_then_one_one -∗
-      ∃ s, ly ↦{1/2} (ST_val s).2 ∗ (ly ↦{1/2} (ST_val s).2 ==∗
+      ∃ s, ly ↦{#1/2} (ST_val s).2 ∗ (ly ↦{#1/2} (ST_val s).2 ==∗
              prog_inv γ lx ly ∗ left_post γ (ST_val s).2).
   Proof.
     unfold left_post.

@@ -13,9 +13,9 @@ This resource algebra is defined in the file `iris-src/monotone.v`
 ### compile instructions
 
 Use `make` in `iris-src` to compile the development. This development has the following dependencies:
-1. Coq 8.12
-2. The std++ project (Iris depends on this): commit hash: 6385b54757de0dc0194d691e668395e09d6e5868
-3. The Iris program logic: commit hash: ec3a2a2a0d70394da7e79e454ccd8c2fc344c935
+1. Coq 8.12 / 8.13
+2. The std++ project (Iris depends on this): 1.5.0
+3. The Iris program logic: 3.4.0
 
 
 ## `categorical`
